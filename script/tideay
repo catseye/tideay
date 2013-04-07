@@ -74,6 +74,9 @@ if SV2:
 else:
     MANAGER = gtksourceview.SourceLanguagesManager()
 
+KEYVAL_TAB = 65289
+KEYVAL_SHIFT_TAB = 65056
+
 
 def get_language_from_mime_type(mime):
     if not SV2:
@@ -95,7 +98,7 @@ def get_file_signature(filename):
 
 def allow_tabs_in_entry(entry):
     def key_event(widget, event):
-        if event.keyval == 65289:
+        if event.keyval == KEYVAL_TAB:
             widget.delete_selection()
             widget.set_position(
                 widget.insert_text('\t', widget.get_position())
@@ -121,13 +124,13 @@ def make_file_completion(callback):
     scroller.show_all()
 
     def key_event_entry(widget, event):
-        if event.keyval == 65289:  # Tab
+        if event.keyval == KEYVAL_TAB:
             tree.grab_focus()
             return True
     entry.connect('key-press-event', key_event_entry)
 
     def key_event_tree(widget, event):
-        if event.keyval == 65289 or event.keyval == 65056:  # Tab / Shift-Tab
+        if event.keyval in (KEYVAL_TAB, KEYVAL_SHIFT_TAB):
             selection = tree.get_selection().get_selected()[1]
             if selection:
                 entry.set_text(liststore.get_value(selection, 0))
@@ -194,7 +197,7 @@ def get_prefix(lines):
     return prefix
 
 
-class Tip:
+class Tip(object):
     def __init__(self):
         self.window = gtk.Window()
         self.window.set_decorated(False)
@@ -226,7 +229,7 @@ class Tip:
         widget.connect('button-press-event', on_press)
 
 
-class Editor:
+class Editor(object):
     def __init__(self, filename):
         self.filename = filename
         if SV2:
@@ -291,7 +294,7 @@ class Editor:
         self.buffer.set_modified(False)
 
 
-class Yaedit:
+class Yaedit(object):
     def prefix_edited(self, *ignore):
         if self.busy:
             return
