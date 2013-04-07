@@ -670,7 +670,8 @@ class Tideay(object):
 
         def on_key_press_event(widget, event):
             if event.keyval == KEYVAL_TAB:
-                return True
+                if isinstance(self.window.get_focus(), gtksourceview2.View):
+                    return True
         self.window.connect('key_press_event', on_key_press_event)
 
         self.accel_group = gtk.AccelGroup()

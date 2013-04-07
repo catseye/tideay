@@ -48,7 +48,7 @@ Changes
     bit of a hack, and hashbang-sniffing will improve in the future.)
 *   No tooltips (they don't show up on hover for me anyway.)  Controls are
     documented in this README for now.
-*   The tab key is *completely* disabled, for now.
+*   The tab key is disabled in the editing pane, for now.
 
 Wishlist
 --------
@@ -65,6 +65,7 @@ Wishlist
     height) buffer tabs might be nice.
 *   Better source language detection via sniffing the hashbang line.
 *   Possibly force source language highlighting.
+*   Visible whitespace (space, tab, LF) would be *really* nice.
 
 ### editing ###
 
