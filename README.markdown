@@ -43,16 +43,21 @@ to it.
 Changes
 -------
 
+### display ###
+
 *   Smaller font.
 *   Notebook's tab pane (on the left) has a fixed with.  Long filenames will
     not expand it and ruin the 80-column width of the editor pane.
 *   Height of each label in the tab pane is smaller.
 *   Only the basename (not the directory name) of the file is displayed in
     the label.
-*   Assumes any file with `python` in its first line is Python (this is a
-    bit of a hack, and hashbang-sniffing will improve in the future.)
 *   No tooltips (they don't show up on hover for me anyway.)  Controls are
     documented in this README for now.
+
+### editing ###
+
+*   Assumes any file with `python` in its first line is Python (this is a
+    bit of a hack, and hashbang-sniffing will improve in the future.)
 *   In the editing pane, pressing the tab key *rewrites* the string to
     the left of the cursor, based on some internal rewriting rules.  For
     example, `--` is replaced by `—`.  See the source code for the full set
@@ -61,11 +66,13 @@ Changes
     *   an empty string is replaced by four spaces
     *   a tab character is replaced by two tab characters
     *   `^I` rewrites to tab, so you can otherwise insert a real tab character
+*   Typing Enter after a `{` or `(` or `[` or `:` indents the next line
+    another four spaces.
 
 Wishlist
 --------
 
-### viewing ###
+### display ###
 
 *   Show column position of cursor.
 *   Left pane seems to want to be able to scroll when many files open,
@@ -76,7 +83,7 @@ Wishlist
 
 ### editing ###
 
-*   Typing `{<enter>` or `:<enter>` should indent the next line four spaces.
+*   Shift+Bkspc should delete four spaces.
 
 ### find and replace ###
 
