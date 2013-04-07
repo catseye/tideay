@@ -401,7 +401,7 @@ class Tideay(object):
         #self.notebook.append_page(toolbox, label)
 
         self.window = gtk.Window()
-        self.window.resize(900, 700)
+        self.window.resize(825, 740)  # 820x745 with a little padding
         self.window.set_title('tideay')
         self.window.add(self.notebook)
 
@@ -751,7 +751,7 @@ class Tideay(object):
         editor.view.connect('focus-out-event', self.unfocus)
 
         hbox = gtk.HBox()
-        label = gtk.Label(filename)
+        label = gtk.Label(os.path.basename(filename))
         hbox.pack_start(label, False, False)
 
         def close(widget):
@@ -763,6 +763,7 @@ class Tideay(object):
         closer.child.modify_font(pango.FontDescription('7'))
         closer.connect('clicked', close)
         hbox.pack_end(closer, False, False)
+        hbox.set_usize(120, 15)
 
         hbox.show_all()
         scrolly.show_all()

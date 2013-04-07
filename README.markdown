@@ -44,6 +44,11 @@ Changes
 -------
 
 *   Smaller font.
+*   Notebook's tab pane (on the left) has a fixed with.  Long filenames will
+    not expand it and ruin the 80-column width of the editor pane.
+*   Height of each label in the tab pane is smaller.
+*   Only the basename (not the directory name) of the file is displayed in
+    the label.
 *   Assumes any file with `python` in its first line is Python (this is a
     bit of a hack, and hashbang-sniffing will improve in the future.)
 *   No tooltips (they don't show up on hover for me anyway.)  Controls are
@@ -62,34 +67,29 @@ Wishlist
 
 ### viewing ###
 
-*   Left pane should have a fixed width if possible.
-*   If possible, indicate the 80-column mark in the editing pane.
-    (If not possible, just default the pane to that size.)
-
-In case you're wondering:  
-12345678901234567890123456789012345678901234567890123456789012345678901234567890
-
 *   Show column position of cursor.
 *   Left pane seems to want to be able to scroll when many files open,
     but does it?  Is this a bug?  Ensuring the controls are visible,
-    while only the buffer tabs scroll, would be nice.  Shorter (less
-    height) buffer tabs might be nice.
+    while only the buffer tabs scroll, would be nice.
 *   Better source language detection via sniffing the hashbang line.
-*   Possibly force source language highlighting.
 *   Visible whitespace (space, tab, LF) would be *really* nice.
 
 ### editing ###
 
 *   Typing `{<enter>` or `:<enter>` should indent the next line four spaces.
+
+### find and replace ###
+
 *   Find should support case-sensitive and maybe whole-world-only search.
 *   Replace found text with new text.
 *   Ctrl+F find should populate find-entry with selected text.
 *   Mark and move to mark (like Ctrl+F2/F2 in SciTE)
+*   Next and Prev should have keyboard shortcuts.
 
 ### buffers ###
 
 *   Should not be possible to open 2 copies of the same file.
-*   Show full path to file (in window title? in buffer tab tooltip?)
+*   Show full path to file in window title.
 *   Should be able to populate buffers from all "interesting" files in the
     current directory tree.  (repository <=> workspace)
 *   Some nice way to move/copy a buffer while inside the editor.
@@ -106,6 +106,11 @@ In case you're wondering:
 *   You maybe shouldn't, by default, be allowed to start multiple instances
     of tideay... trying to should just open the tab in the currently-
     running tideay.
+
+### low priority ###
+
+*   Indicate the 80-column mark in the editing pane.
+*   Some way to force source language highlighting.
 
 [pfh]: http://www.logarithmic.net/pfh/
 [yaedit]: http://www.logarithmic.net/pfh/yaedit 
