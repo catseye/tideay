@@ -2,6 +2,7 @@
 # encoding: UTF-8
 
 #    Copyright (C) 2007 Paul Harrison
+#    Portions copyright (C) 2013 Chris Pressey, Cat's Eye Technologies
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
 #    the Free Software Foundation; either version 2 of the License, or
@@ -259,6 +260,7 @@ class Editor(object):
         language = None
         mimetype = mimetypes.guess_type(filename)[0]
         if mimetype:
+            print "mimetype", mimetype
             language = get_language_from_mime_type(mimetype)
 
         if not os.path.exists(filename):
@@ -269,8 +271,17 @@ class Editor(object):
             with open(self.filename, 'r') as f:
                 for line in f:
                     break
-            if line is not None and 'python' in line:
-                language = get_language_from_mime_type('text/x-python')
+            if line is not None and line.startswith('#!'):
+                langs = (
+                    ('python', 'text/x-python'),
+                    ('ruby', 'text/x-ruby'),
+                    ('bin/sh', 'text/x-sh'),
+                    ('bash', 'text/x-sh'),
+                )
+                for (name, mime_type) in langs:
+                    if name in line:
+                        language = get_language_from_mime_type(mime_type)
+                        break
 
         if language:
             self.buffer.set_language(language)

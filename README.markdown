@@ -56,8 +56,9 @@ Changes
 
 ### editing ###
 
-*   Assumes any file with `python` in its first line is Python (this is a
-    bit of a hack, and hashbang-sniffing will improve in the future.)
+*   Will sniff the hashbang line of the file if it cannot determine the
+    language from the file extension.  Currently supports Python, Ruby, and
+    shell.
 *   In the editing pane, pressing the tab key *rewrites* the string to
     the left of the cursor, based on some internal rewriting rules.  For
     example, `--` is replaced by `—`.  See the source code for the full set
@@ -75,10 +76,10 @@ Wishlist
 ### display ###
 
 *   Show column position of cursor.
-*   Left pane seems to want to be able to scroll when many files open,
-    but does it?  Is this a bug?  Ensuring the controls are visible,
-    while only the buffer tabs scroll, would be nice.
-*   Better source language detection via sniffing the hashbang line.
+*   When notebook tab pane exceeds height of window, you can only scroll down
+    as far as the "open" entry.  You can't seem to use "find" etc properly.
+    Ensuring the controls are visible, while only the buffer tabs scroll,
+    would be nice (but it doesn't look like GtkNotebook supports this much.)
 *   Visible whitespace (space, tab, LF) would be *really* nice.
 
 ### editing ###
@@ -103,7 +104,7 @@ Wishlist
 
 ### other ###
 
-*   Typing `<shift+enter>` should interpret the line as a shell command
+*   Typing Ctrl+Enter should interpret the line as a shell command
     and run it.  It should (maybe) replace the shell command text with the
     result of running it.  Or... other creative permutations of this idea.
 *   Loose integration with version control, along those lines.  Make it easy
