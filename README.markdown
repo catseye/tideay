@@ -48,6 +48,7 @@ Changes
     bit of a hack, and hashbang-sniffing will improve in the future.)
 *   No tooltips (they don't show up on hover for me anyway.)  Controls are
     documented in this README for now.
+*   The tab key is *completely* disabled, for now.
 
 Wishlist
 --------
@@ -74,6 +75,7 @@ Wishlist
 *   Find should support case-sensitive and maybe whole-world-only search.
 *   Replace found text with new text.
 *   ^F find should populate find-entry with selected text.
+*   Mark and move to mark (like Ctrl+F2/F2 in SciTE)
 
 ### buffers ###
 

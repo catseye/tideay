@@ -216,20 +216,24 @@ class Editor(object):
         self.view.set_auto_indent(True)
         self.view.modify_font(pango.FontDescription('monospace 10'))
 
+        language = None
         mimetype = mimetypes.guess_type(filename)[0]
         if mimetype:
-            self.buffer.set_language(get_language_from_mime_type(mimetype))
+            language = get_language_from_mime_type(mimetype)
 
         if not os.path.exists(filename):
             open(filename, 'wb').close()
 
-        if not mimetype:
+        if not language:
             line = None
             with open(self.filename, 'r') as f:
                 for line in f:
                     break
             if 'python' in line:
-                self.buffer.set_language(get_language_from_mime_type('text/x-python'))
+                language = get_language_from_mime_type('text/x-python')
+        
+        if language:
+            self.buffer.set_language(language)
 
         self.file_signature = None
         self.file_text = ''
@@ -663,6 +667,11 @@ class Tideay(object):
             gobject.timeout_add(CLOSE_TIMEOUT, lambda: self.window.destroy())
             return True
         self.window.connect('delete-event', delete_event)
+
+        def on_key_press_event(widget, event):
+            if event.keyval == KEYVAL_TAB:
+                return True
+        self.window.connect('key_press_event', on_key_press_event)
 
         self.accel_group = gtk.AccelGroup()
         self.window.add_accel_group(self.accel_group)
