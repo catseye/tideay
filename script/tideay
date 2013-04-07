@@ -538,7 +538,8 @@ class Tideay(object):
 
     def possibly_indent_new_block(self, buffer, start, end):
         text = buffer.get_text(start, end, True)
-        if text.endswith((':', '{', '(', '[')):
+        if (text.endswith((':', '{', '(', '[')) or
+            text.startswith(('*   ', '-   '))):
             # Allow the keystroke, but queue an insert of four spaces
             def insert_four_spaces(widget):
                 widget.insert_at_cursor(u'    ', 4)

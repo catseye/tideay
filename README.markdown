@@ -47,7 +47,7 @@ Changes
 ### display ###
 
 *   Smaller font.
-*   Notebook's tab pane (on the left) has a fixed with.  Long filenames will
+*   Notebook's tab pane (on the left) has a fixed width.  Long filenames will
     not expand it and ruin the 80-column width of the editor pane.
 *   Height of each label in the tab pane is smaller.
 *   Only the basename (not the directory name) of the file is displayed in
@@ -57,9 +57,9 @@ Changes
 
 ### editing ###
 
-*   Will sniff the hashbang line of the file if it cannot determine the
-    language from the file extension.  Currently supports Python, Ruby, and
-    shell.
+*   The hashbang line of the file will be sniffed if the language cannot be
+    determined from the the file extension.  Currently supports Python, Ruby,
+    and shell.
 *   In the editing pane, pressing the tab key *rewrites* the string to
     the left of the cursor, based on some internal rewriting rules.  For
     example, `--` is replaced by `—`.  See the source code for the full set
@@ -68,8 +68,10 @@ Changes
     *   an empty string is replaced by four spaces
     *   a tab character is replaced by two tab characters
     *   `^I` rewrites to tab, so you can otherwise insert a real tab character
-*   Typing Enter after a `{` or `(` or `[` or `:` indents the next line
-    another four spaces.
+*   Typing Enter after a `{` or `(` or `[` or `:`, or on a line that begins
+    with `*   ` or `-   `, indents the next line (another) four spaces.
+    Most languages benefit from the brackets, Python benefits from the colon,
+    and Markdown benefits from the `*`/`-` for lists.
 *   Typing Ctrl+Enter interprets the line as a shell command and executes it,
     replacing the line with the standard output produced by the command.
     Note that this is a little experimental, and the exact usage may vary in
@@ -91,8 +93,6 @@ Wishlist
 ### editing ###
 
 *   Shift+Bkspc should delete four spaces.
-*   Hitting Enter on a line that starts with `*   ` or `-   ` should also
-    indent four spaces (Markdown lists.)
 
 ### find and replace ###
 
