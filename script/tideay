@@ -67,7 +67,7 @@ import gobject
 import gtk
 import pango
 
-TIP_TIMEOUT = 400
+CLOSE_TIMEOUT = 400
 
 mimetypes.init()
 
@@ -197,38 +197,6 @@ def get_prefix(lines):
             prefix = prefix[:i]
             break
     return prefix
-
-
-class Tip(object):
-    def __init__(self):
-        self.window = gtk.Window()
-        self.window.set_decorated(False)
-        self.window.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_MENU)
-        self.window.set_property('accept-focus', False)
-        self.label = gtk.Label('hello')
-        self.label.show()
-        self.window.add(self.label)
-
-        self.window.add_events(gtk.gdk.ENTER_NOTIFY)
-        self.window.connect('enter-notify-event',
-            lambda *etc: self.window.hide()
-        )
-
-    def show(self, tip):
-        self.label.set_text(tip)
-        x, y = self.window.get_display().get_pointer()[1:3]
-        width, height = self.window.get_size()
-        self.window.move(x - width // 2, y - height - 10)
-        self.window.show()
-
-        gobject.timeout_add(TIP_TIMEOUT, lambda *etc: self.window.hide())
-
-    def add_click_tip(self, widget, tip):
-        def on_press(widget, event):
-            if widget.is_focus() or event.button != 1:
-                return
-            self.show(tip)
-        widget.connect('button-press-event', on_press)
 
 
 class Editor(object):
@@ -525,17 +493,8 @@ class Tideay(object):
         def focus_in(*etc):
             if self.busy:
                 return
-
             editor.sync_from_disk()
 
-            n = 0
-            for i in xrange(self.notebook.get_n_pages()):
-                if self.notebook.get_nth_page(i) in self.editors:
-                    n += 1
-                if self.notebook.get_nth_page(i) is scrolly:
-                    if n < 10:
-                        self.tip.show('Alt-%d' % n)
-                        break
         editor.view.connect('focus', focus_in)
 
         def mod_change(widget):
@@ -567,7 +526,6 @@ class Tideay(object):
         closer.set_relief(gtk.RELIEF_NONE)
         closer.child.modify_font(pango.FontDescription('7'))
         closer.connect('clicked', close)
-        self.tip.add_click_tip(closer, 'Ctrl-W')
         hbox.pack_end(closer, False, False)
 
         hbox.show_all()
@@ -616,8 +574,6 @@ class Tideay(object):
     def __init__(self, filenames):
         self.editors = weakref.WeakKeyDictionary()
         self.todo = []
-
-        self.tip = Tip()
 
         self.notebook = gtk.Notebook()
         self.notebook.set_tab_pos(gtk.POS_LEFT)
@@ -704,8 +660,7 @@ class Tideay(object):
 
         def delete_event(*etc):
             self.window.hide()
-            self.tip.show('Ctrl-Q')
-            gobject.timeout_add(TIP_TIMEOUT, lambda: self.window.destroy())
+            gobject.timeout_add(CLOSE_TIMEOUT, lambda: self.window.destroy())
             return True
         self.window.connect('delete-event', delete_event)
 
@@ -717,15 +672,12 @@ class Tideay(object):
 
         self.accel_group.connect_group(ord('I'), gtk.gdk.CONTROL_MASK, 0,
             lambda *etc: self.line_entry.grab_focus())
-        self.tip.add_click_tip(self.line_entry, 'Ctrl-I')
 
         self.accel_group.connect_group(ord('F'), gtk.gdk.CONTROL_MASK, 0,
             lambda *etc: self.find_entry.grab_focus())
-        self.tip.add_click_tip(self.find_entry, 'Ctrl-F')
 
         self.accel_group.connect_group(ord('O'), gtk.gdk.CONTROL_MASK, 0,
             lambda *etc: open_entry.grab_focus())
-        self.tip.add_click_tip(open_entry, 'Ctrl-O')
 
         def close_editor():
             page = self.notebook.get_nth_page(self.notebook.get_current_page())
@@ -761,7 +713,6 @@ class Tideay(object):
             settings.set_property('gtk-entry-select-on-focus', old)
         self.accel_group.connect_group(ord('P'), gtk.gdk.CONTROL_MASK, 0,
             prefix_focuser)
-        self.tip.add_click_tip(self.prefix_entry, 'Ctrl-P')
 
         self.window.show_all()
         self.find_hbox.hide()

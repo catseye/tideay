@@ -8,6 +8,26 @@ tideay is an experimental-ish fork of [pfh][]'s [yaedit][] which may
 
 It aims to keep my development environment neat and... tideay (ugh.)
 
+Controls
+--------
+
+    Ctrl+O                 open (or create) a file into a buffer
+    Alt+1, Alt+2...Alt+0   switch to buffer #1, #2... #10
+    Ctrl+W                 close buffer
+    
+    Ctrl+I                 jump to line
+    Ctrl+F                 find text
+    Ctrl+P                 alter common prefix of selected lines
+    
+    Ctrl+Z                 undo
+    Ctrl+Shift+Z           redo
+    Ctrl+X                 cut
+    Ctrl+C                 copy
+    Ctrl+V                 paste
+    Ctrl+A                 select all
+    
+    Ctrl+Q                 quit tideay
+    
 Notes
 -----
 
@@ -16,7 +36,7 @@ shortly.  In the meantime, know that I currently use SciTE (go ahead, laugh)
 and I'm trying to start using yaedit... or rather tideay... because it's
 easier to hack.  (probably.)
 
-Not having to press ^S to save feels awkward, but in the age of version
+Not having to press Ctrl+S to save feels awkward, but in the age of version
 control, it probably makes more sense, so I'm going to try to get used
 to it.
 
@@ -26,6 +46,8 @@ Changes
 *   Smaller font.
 *   Assumes any file with `python` in its first line is Python (this is a
     bit of a hack, and hashbang-sniffing will improve in the future.)
+*   No tooltips (they don't show up on hover for me anyway.)  Controls are
+    documented in this README for now.
 
 Wishlist
 --------
@@ -40,9 +62,8 @@ Wishlist
     but does it?  Is this a bug?  Ensuring the controls are visible,
     while only the buffer tabs scroll, would be nice.  Shorter (less
     height) buffer tabs might be nice.
-*   A way to detect source language via the hashbang line and/or force
-    the source language.
-*   No tooltips (why do I need them? it's *my* editor)
+*   Better source language detection via sniffing the hashbang line.
+*   Possibly force source language highlighting.
 
 ### editing ###
 
