@@ -249,15 +249,19 @@ class Editor(object):
         self.view.modify_font(pango.FontDescription('monospace 10'))
 
         mimetype = mimetypes.guess_type(filename)[0]
-        if not mimetype:
-            mimetype = 'text/plain'
-        # haaaack
-        if os.path.basename(self.filename) == 'tideay':
-            mimetype = 'text/x-python'        
-        self.buffer.set_language(get_language_from_mime_type(mimetype))
+        if mimetype:
+            self.buffer.set_language(get_language_from_mime_type(mimetype))
 
         if not os.path.exists(filename):
             open(filename, 'wb').close()
+
+        if not mimetype:
+            line = None
+            with open(self.filename, 'r') as f:
+                for line in f:
+                    break
+            if 'python' in line:
+                self.buffer.set_language(get_language_from_mime_type('text/x-python'))
 
         self.file_signature = None
         self.file_text = ''

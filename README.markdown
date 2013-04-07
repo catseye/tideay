@@ -24,7 +24,8 @@ Changes
 -------
 
 *   Smaller font.
-*   Assumes any file called `tideay` is Python (this is a temporary hack!)
+*   Assumes any file with `python` in its first line is Python (this is a
+    bit of a hack, and hashbang-sniffing will improve in the future.)
 
 Wishlist
 --------
