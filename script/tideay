@@ -61,6 +61,7 @@ except:
 import mimetypes
 import os
 import re
+import subprocess
 import sys
 import weakref
 
@@ -260,7 +261,7 @@ class Editor(object):
         language = None
         mimetype = mimetypes.guess_type(filename)[0]
         if mimetype:
-            print "mimetype", mimetype
+            #print "mimetype", mimetype
             language = get_language_from_mime_type(mimetype)
 
         if not os.path.exists(filename):
@@ -429,14 +430,20 @@ class Tideay(object):
                 if not editor:
                     # this seems unlikely to ever actually happen
                     return False
+                buffer = editor.get_buffer()
+                end = buffer.get_iter_at_offset(
+                    buffer.get_property('cursor-position')
+                )
+                start = buffer.get_iter_at_line(end.get_line())
                 if event.keyval == KEYVAL_TAB:
-                    self.rewrite(editor)
+                    self.rewrite(buffer, start, end)
                     return True
                 elif event.keyval == KEYVAL_RETURN:
                     if event.state & gtk.gdk.CONTROL_MASK:
-                        print "you pressed ctrl+enter"
+                        self.execute_command(buffer, start, end)
+                        return True
                     else:
-                        self.possibly_indent_new_block(editor)
+                        self.possibly_indent_new_block(buffer, start, end)
                         return False
             else:
                 keyname = gtk.gdk.keyval_name(event.keyval)
@@ -521,32 +528,31 @@ class Tideay(object):
 
         self.refresh()
 
-    def rewrite(self, editor):
-        buffer = editor.get_buffer()
-
+    def rewrite(self, buffer, start, end):
         buffer.begin_user_action()
-        end = buffer.get_iter_at_offset(
-            buffer.get_property('cursor-position')
-        )
-        start = buffer.get_iter_at_line(end.get_line())
         text = buffer.get_text(start, end, True)
         text = rewrite_text(text)
         buffer.delete(start, end)
         buffer.insert(start, text, len(text))
         buffer.end_user_action()
 
-    def possibly_indent_new_block(self, editor):
-        buffer = editor.get_buffer()
-        end = buffer.get_iter_at_offset(
-            buffer.get_property('cursor-position')
-        )
-        start = buffer.get_iter_at_line(end.get_line())
+    def possibly_indent_new_block(self, buffer, start, end):
         text = buffer.get_text(start, end, True)
         if text.endswith((':', '{', '(', '[')):
             # Allow the keystroke, but queue an insert of four spaces
             def insert_four_spaces(widget):
                 widget.insert_at_cursor(u'    ', 4)
             gtk.idle_add(insert_four_spaces, buffer)
+
+    def execute_command(self, buffer, start, end):
+        buffer.begin_user_action()
+        command = buffer.get_text(start, end, True)
+        command = command.strip()
+        pipe = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
+        output = pipe.communicate()[0]
+        buffer.delete(start, end)
+        buffer.insert(start, output, len(output))
+        buffer.end_user_action()
 
     def prefix_edited(self, *ignore):
         if self.busy:

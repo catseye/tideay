@@ -18,6 +18,7 @@ Controls
     Ctrl+I                 jump to line
     Ctrl+F                 find text
     Ctrl+P                 alter common prefix of selected lines
+    Ctrl+Enter             execute shell command and insert result
     
     Ctrl+Z                 undo
     Ctrl+Shift+Z           redo
@@ -69,6 +70,11 @@ Changes
     *   `^I` rewrites to tab, so you can otherwise insert a real tab character
 *   Typing Enter after a `{` or `(` or `[` or `:` indents the next line
     another four spaces.
+*   Typing Ctrl+Enter interprets the line as a shell command and executes it,
+    replacing the line with the standard output produced by the command.
+    Note that this is a little experimental, and the exact usage may vary in
+    the future.  For now, it is, among other things, a neat way to include
+    snippets into the file (`cat snippet.txt` Ctrl+Enter).
 
 Wishlist
 --------
@@ -85,6 +91,8 @@ Wishlist
 ### editing ###
 
 *   Shift+Bkspc should delete four spaces.
+*   Hitting Enter on a line that starts with `*   ` or `-   ` should also
+    indent four spaces (Markdown lists.)
 
 ### find and replace ###
 
@@ -101,12 +109,13 @@ Wishlist
 *   Should be able to populate buffers from all "interesting" files in the
     current directory tree.  (repository <=> workspace)
 *   Some nice way to move/copy a buffer while inside the editor.
+*   Some way to switch to a buffer by typing in part of its filename.
 
 ### other ###
 
-*   Typing Ctrl+Enter should interpret the line as a shell command
-    and run it.  It should (maybe) replace the shell command text with the
-    result of running it.  Or... other creative permutations of this idea.
+*   Running a shell command — there should there be some way to retain the
+    command you ran.  Maybe by default, but it gets selected, so that you
+    can immediately delete it?  Not sure.
 *   Loose integration with version control, along those lines.  Make it easy
     to see what the hg/git/&c diff of the current buffer looks like.  Make it
     easy to commit.  These might be external to the editor itself, but there
