@@ -20,12 +20,16 @@ Not having to press ^S to save feels awkward, but in the age of version
 control, it probably makes more sense, so I'm going to try to get used
 to it.
 
+Changes
+-------
+
+*   Smaller font.
+
 Wishlist
 --------
 
 ### viewing ###
 
-*   Smaller font.
 *   Left pane should have a fixed width if possible.
 *   If possible, indicate the 80-column mark in the editing pane.
     (If not possible, just default the pane to that size.)
@@ -36,6 +40,7 @@ Wishlist
     height) buffer tabs might be nice.
 *   A way to detect source language via the hashbang line and/or force
     the source language.
+*   No tooltips (why do I need them? it's *my* editor)
 
 ### editing ###
 

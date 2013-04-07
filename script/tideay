@@ -15,7 +15,9 @@
 #    along with this program; if not, write to the Free Software
 #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-""" yaedit - yet another editor
+""" tideay - an editor to keep your dev env neat and tideay
+
+    forked from: yaedit - yet another editor
 
     Versions
     *
@@ -244,7 +246,7 @@ class Editor(object):
         else:
             self.view = gtksourceview.SourceView(self.buffer)
         self.view.set_auto_indent(True)
-        self.view.modify_font(pango.FontDescription('monospace'))
+        self.view.modify_font(pango.FontDescription('monospace 10'))
 
         mimetype = mimetypes.guess_type(filename)[0]
         if mimetype:
@@ -294,7 +296,7 @@ class Editor(object):
         self.buffer.set_modified(False)
 
 
-class Yaedit(object):
+class Tideay(object):
     def prefix_edited(self, *ignore):
         if self.busy:
             return
@@ -689,7 +691,7 @@ class Yaedit(object):
 
         self.window = gtk.Window()
         self.window.resize(900, 700)
-        self.window.set_title('yaedit')
+        self.window.set_title('tideay')
         self.window.add(self.notebook)
 
         def delete_event(*etc):
@@ -782,7 +784,7 @@ class Yaedit(object):
 
 
 if __name__ == '__main__':
-    yaedit = Yaedit(sys.argv[1:])
-    yaedit.window.connect('destroy', gtk.main_quit)
+    tideay = Tideay(sys.argv[1:])
+    tideay.window.connect('destroy', gtk.main_quit)
 
     gtk.main()
