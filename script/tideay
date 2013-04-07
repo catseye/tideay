@@ -548,11 +548,22 @@ class Tideay(object):
     def execute_command(self, buffer, start, end):
         buffer.begin_user_action()
         command = buffer.get_text(start, end, True)
+        shell_mode = False
+        if command.startswith('%'):
+            command = command[1:]
+            shell_mode = True
         command = command.strip()
         pipe = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
         output = pipe.communicate()[0]
-        buffer.delete(start, end)
-        buffer.insert(start, output, len(output))
+        if shell_mode:
+            output = '\n' + output
+            buffer.insert(end, output, len(output))
+            def insert_prompt(widget):
+                widget.insert_at_cursor(u'% ', 2)
+            gtk.idle_add(insert_prompt, buffer)
+        else:
+            buffer.delete(start, end)
+            buffer.insert(start, output, len(output))
         buffer.end_user_action()
 
     def prefix_edited(self, *ignore):

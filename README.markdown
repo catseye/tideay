@@ -74,8 +74,11 @@ Changes
     and Markdown benefits from the `*`/`-` for lists.
 *   Typing Ctrl+Enter interprets the line as a shell command and executes it,
     replacing the line with the standard output produced by the command.
-    Note that this is a little experimental, and the exact usage may vary in
-    the future.  For now, it is, among other things, a neat way to include
+    If the line begins with `%`, the command is not replaced; the output is
+    appended underneath it, along with another line prefaced with `% ` — the
+    effect being a pseudo-shell of sorts.
+    Note that Ctrl+Enter is a little experimental, and the exact usage may vary
+    in the future.  For now, it is, among other things, a neat way to include
     snippets into the file (`cat snippet.txt` Ctrl+Enter).
 
 Wishlist
