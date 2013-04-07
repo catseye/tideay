@@ -24,6 +24,7 @@ Changes
 -------
 
 *   Smaller font.
+*   Assumes any file called `tideay` is Python (this is a temporary hack!)
 
 Wishlist
 --------
@@ -47,9 +48,10 @@ Wishlist
 *   Typing `{<enter>` or `:<enter>` should indent the next line four spaces.
 *   Typing `<tab>` should "tab-complete" (rewrite) the text to the left.
     This never results in a tab character, unless a tab character is what the
-    rewrite  says to substitute in.
+    rewrite rule says to substitute in.
 *   Find should support case-sensitive and maybe whole-world-only search.
 *   Replace found text with new text.
+*   ^F find should populate find-entry with selected text.
 
 ### buffers ###
 
