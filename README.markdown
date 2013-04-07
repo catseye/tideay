@@ -32,7 +32,7 @@ Notes
 -----
 
 A full, in-depth analysis of my history with text editors will appear here
-shortly.  In the meantime, know that I currently use SciTE (go ahead, laugh)
+shortly.  In the meantime, know that I currently use [SciTE][] (go ahead, laugh)
 and I'm trying to start using yaedit... or rather tideay... because it's
 easier to hack.  (probably.)
 
@@ -48,7 +48,14 @@ Changes
     bit of a hack, and hashbang-sniffing will improve in the future.)
 *   No tooltips (they don't show up on hover for me anyway.)  Controls are
     documented in this README for now.
-*   In the editing pane, pressing the tab key inserts two spaces for now.
+*   In the editing pane, pressing the tab key *rewrites* the string to
+    the left of the cursor, based on some internal rewriting rules.  For
+    example, `--` is replaced by `—`.  See the source code for the full set
+    of rules.  The rewriting rules implement tabs in the following way:
+    *   four spaces are replaced by eight spaces
+    *   an empty string is replaced by four spaces
+    *   a tab character is replaced by two tab characters
+    *   `^I` rewrites to tab, so you can otherwise insert a real tab character
 
 Wishlist
 --------
@@ -70,12 +77,9 @@ Wishlist
 ### editing ###
 
 *   Typing `{<enter>` or `:<enter>` should indent the next line four spaces.
-*   Typing `<tab>` should "tab-complete" (rewrite) the text to the left.
-    This never results in a tab character, unless a tab character is what the
-    rewrite rule says to substitute in.
 *   Find should support case-sensitive and maybe whole-world-only search.
 *   Replace found text with new text.
-*   ^F find should populate find-entry with selected text.
+*   Ctrl+F find should populate find-entry with selected text.
 *   Mark and move to mark (like Ctrl+F2/F2 in SciTE)
 
 ### buffers ###
@@ -101,3 +105,4 @@ Wishlist
 
 [pfh]: http://www.logarithmic.net/pfh/
 [yaedit]: http://www.logarithmic.net/pfh/yaedit 
+[SciTE]: http://www.scintilla.org/SciTE.html

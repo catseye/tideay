@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# encoding: UTF-8
 
 #    Copyright (C) 2007 Paul Harrison
 #    This program is free software; you can redistribute it and/or modify
@@ -197,6 +198,44 @@ def get_prefix(lines):
             prefix = prefix[:i]
             break
     return prefix
+
+
+# not a dict, because order matters, and we iterate it anyway
+# TODO: more mathematical symbols (follow LaTeX? or HTML entities?)
+REWRITE_MAP = (
+    (u'    ', u'        '),
+    (u'(c)', u'©'),
+    (u"''", u'ˮ'),   # this is a dbl-apo U+02EE.  maybe primes ′ ″ ‴ instead ?
+    (u'--', u'—'),
+    (u'->', u'→'),
+    (u'<-', u'←'),
+    (u'|^', u'↑'),
+    (u'|v', u'↓'),
+    (u'<<', u'«'),
+    (u'>>', u'»'),
+    (u'[[', u'⟦'),
+    (u']]', u'⟧'),
+    (u'<=', u'≤'),
+    (u'>=', u'≥'),
+    (u'/=', u'≠'),
+    (u'^I', u'\t'),
+    (u'u:', u'ü'),
+    (u'U:', u'Ü'),
+    (u'e`', u'è'),
+    (u"e'", u'é'),
+    (u'a`', u'à'),
+    (u"a'", u'á'),
+    (u'\t', u'\t\t'),
+)
+
+
+def rewrite_text(text):
+    if text == u'':
+        return u'    '
+    for (search, replace) in REWRITE_MAP:
+        if text.endswith(search):
+            return text[:-len(search)] + replace.encode('UTF-8')
+    return text
 
 
 class Editor(object):
@@ -681,8 +720,16 @@ class Tideay(object):
                     if not editor:
                         return False
                     buffer = editor.get_buffer()
+
                     buffer.begin_user_action()
-                    buffer.insert_at_cursor(u'  ', 2)
+                    end = buffer.get_iter_at_offset(
+                        buffer.get_property('cursor-position')
+                    )
+                    start = buffer.get_iter_at_line(end.get_line())
+                    text = buffer.get_text(start, end, True)
+                    text = rewrite_text(text)
+                    buffer.delete(start, end)
+                    buffer.insert(start, text, len(text))
                     buffer.end_user_action()
                     return True
         self.window.connect('key_press_event', on_key_press_event)
