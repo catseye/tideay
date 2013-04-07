@@ -48,7 +48,7 @@ Changes
     bit of a hack, and hashbang-sniffing will improve in the future.)
 *   No tooltips (they don't show up on hover for me anyway.)  Controls are
     documented in this README for now.
-*   The tab key is disabled in the editing pane, for now.
+*   In the editing pane, pressing the tab key inserts two spaces for now.
 
 Wishlist
 --------

@@ -559,6 +559,10 @@ class Tideay(object):
         self.editors[scrolly] = editor
 
     def active_editor(self):
+        """Note that this does not return an Editor object.
+        It returns a gtksourceview2.View object.
+        
+        """
         page = self.notebook.get_nth_page(self.notebook.get_current_page())
         if page not in self.editors:
             return None
@@ -576,6 +580,8 @@ class Tideay(object):
         self.todo.append(callback)
 
     def __init__(self, filenames):
+        # keys are gtk ScrollViews (what's added to the notebook)
+        # values are Editor objects (defined in this source)
         self.editors = weakref.WeakKeyDictionary()
         self.todo = []
 
@@ -671,6 +677,13 @@ class Tideay(object):
         def on_key_press_event(widget, event):
             if event.keyval == KEYVAL_TAB:
                 if isinstance(self.window.get_focus(), gtksourceview2.View):
+                    editor = self.active_editor()
+                    if not editor:
+                        return False
+                    buffer = editor.get_buffer()
+                    buffer.begin_user_action()
+                    buffer.insert_at_cursor(u'  ', 2)
+                    buffer.end_user_action()
                     return True
         self.window.connect('key_press_event', on_key_press_event)
 
