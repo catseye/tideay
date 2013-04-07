@@ -65,6 +65,10 @@ Wishlist
 *   Left pane should have a fixed width if possible.
 *   If possible, indicate the 80-column mark in the editing pane.
     (If not possible, just default the pane to that size.)
+
+In case you're wondering:  
+12345678901234567890123456789012345678901234567890123456789012345678901234567890
+
 *   Show column position of cursor.
 *   Left pane seems to want to be able to scroll when many files open,
     but does it?  Is this a bug?  Ensuring the controls are visible,
