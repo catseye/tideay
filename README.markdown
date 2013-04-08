@@ -48,7 +48,7 @@ Changes from yaedit
     not expand it and ruin the 80-column width of the editor pane.
 *   Height of each label in the tab pane is smaller.
 *   Only the basename (not the directory name) of the file is displayed in
-    the label.
+    the label.  Full (relative) path to file is shown in the window title.
 *   No tooltips (they don't show up on hover for me anyway.)  Controls are
     documented in this README for now.
 
@@ -92,7 +92,9 @@ Wishlist
 
 ### editing ###
 
-*   Shift+Bkspc should delete four spaces.
+*   Shift+Bkspc should delete four spaces, or rather, do a "destructive
+    rewrite", which would just be like Tab except a different set of rules.
+*   tab with selection should not do GtkSourceView's tab with selection
 
 ### find and replace ###
 
@@ -105,7 +107,6 @@ Wishlist
 ### buffers ###
 
 *   Should not be possible to open 2 copies of the same file.
-*   Show full path to file in window title.
 *   Should be able to populate buffers from all "interesting" files in the
     current directory tree.  (repository <=> workspace)
 *   Some nice way to move/copy a buffer while inside the editor.

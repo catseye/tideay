@@ -403,6 +403,7 @@ class Tideay(object):
         self.notebook.append_page(page, vbox)
 
         def on_switch(widget, _, page_number):
+            self.set_window_title(page_number)
             if page_number > 0 and page_number == self.notebook.page_num(page):
                 self.notebook.emit_stop_by_name('switch-page')
         self.notebook.connect('switch-page', on_switch)
@@ -415,7 +416,6 @@ class Tideay(object):
 
         self.window = gtk.Window()
         self.window.resize(825, 740)  # 820x745 with a little padding
-        self.window.set_title('tideay')
         self.window.add(self.notebook)
 
         def delete_event(*etc):
@@ -518,6 +518,7 @@ class Tideay(object):
         else:
             self.notebook.set_current_page(0)
             self.notebook.get_nth_page(0).child.grab_focus()
+            self.set_window_title(0)
 
         def timeout():
             for editor in self.editors.values():
@@ -565,6 +566,14 @@ class Tideay(object):
             buffer.delete(start, end)
             buffer.insert(start, output, len(output))
         buffer.end_user_action()
+
+    def set_window_title(self, page_number):
+        scrolly = self.notebook.get_nth_page(page_number)
+        editor = self.editors.get(scrolly, None)
+        if editor:
+            self.window.set_title('%s - tideay' % editor.filename)
+        else:
+            self.window.set_title('tideay')
 
     def prefix_edited(self, *ignore):
         if self.busy:
@@ -843,10 +852,12 @@ class Tideay(object):
         where = best
 
         self.notebook.insert_page(scrolly, hbox, where)
-        self.notebook.set_current_page(self.notebook.page_num(scrolly))
+        page_number = self.notebook.page_num(scrolly)
+        self.notebook.set_current_page(page_number)
         self.notebook.set_tab_reorderable(scrolly, True)
 
         self.editors[scrolly] = editor
+        self.set_window_title(page_number)
 
     def active_editor(self):
         """Note that this does not return an Editor object.
