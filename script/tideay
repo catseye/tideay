@@ -82,6 +82,7 @@ else:
 KEYVAL_TAB = 65289
 KEYVAL_SHIFT_TAB = 65056
 KEYVAL_RETURN = 65293
+KEYVAL_BACKSPACE = 65288
 
 
 def get_language_from_mime_type(mime):
@@ -205,9 +206,14 @@ def get_prefix(lines):
 
 # not a dict, because order matters, and we iterate it anyway
 # TODO: more mathematical symbols (follow LaTeX? or HTML entities?)
-REWRITE_MAP = (
+PRODUCTIVE_REWRITE_MAP = (
+    # four characters
     (u'    ', u'        '),
+    # three characters
     (u'(c)', u'©'),
+    (u'GBP', u'£'),
+    (u'EUR', u'€'),
+    # two characters
     (u"''", u'ˮ'),   # this is a dbl-apo U+02EE.  maybe primes ′ ″ ‴ instead ?
     (u'--', u'—'),
     (u'->', u'→'),
@@ -221,21 +227,48 @@ REWRITE_MAP = (
     (u'<=', u'≤'),
     (u'>=', u'≥'),
     (u'/=', u'≠'),
+    (u'c/', u'¢'),
+    (u'<3', u'♡'),
+    (u'&&', u'⌘'),
+    (u'*5', u'☆'),
+    (u'<>', u'♢'),
     (u'^I', u'\t'),
-    (u'u:', u'ü'),
-    (u'U:', u'Ü'),
-    (u'e`', u'è'),
-    (u"e'", u'é'),
     (u'a`', u'à'),
     (u"a'", u'á'),
+    (u'a:', u'ä'),
+    (u'e`', u'è'),
+    (u"e'", u'é'),
+    (u'e:', u'ë'),
+    (u"i:", u'ï'),
+    (u"i'", u'í'),
+    (u'o:', u'ö'),
+    (u"o'", u'ó'),
+    (u'u:', u'ü'),
+    (u'U:', u'Ü'),
+    (u"u'", u'ú'),
+    (u'ae', u'æ'),
+    # one character.  note the swapping.
+    (u'♡', u'♥'),
+    (u'♥', u'♡'),
+    (u'☆', u'★'),
+    (u'★', u'☆'),
+    (u'♢', u'♦'),
+    (u'♦', u'♢'),
     (u'\t', u'\t\t'),
 )
 
 
-def rewrite_text(text):
+DESTRUCTIVE_REWRITE_MAP = (
+    # four characters
+    (u'    ', u''),
+)
+
+
+def rewrite_text(text, map):
     if text == u'':
         return u'    '
-    for (search, replace) in REWRITE_MAP:
+    for (search, replace) in map:
+        search = search.encode('UTF-8')
         if text.endswith(search):
             return text[:-len(search)] + replace.encode('UTF-8')
     return text
@@ -436,7 +469,7 @@ class Tideay(object):
                 )
                 start = buffer.get_iter_at_line(end.get_line())
                 if event.keyval == KEYVAL_TAB:
-                    self.rewrite(buffer, start, end)
+                    self.productive_rewrite(buffer, start, end)
                     return True
                 elif event.keyval == KEYVAL_RETURN:
                     if event.state & gtk.gdk.CONTROL_MASK:
@@ -445,9 +478,13 @@ class Tideay(object):
                     else:
                         self.possibly_indent_new_block(buffer, start, end)
                         return False
-            else:
-                keyname = gtk.gdk.keyval_name(event.keyval)
-                #print "Key %s (%d) was pressed" % (keyname, event.keyval)
+                elif (event.keyval == KEYVAL_BACKSPACE and
+                      event.state & gtk.gdk.SHIFT_MASK):
+                    self.destructive_rewrite(buffer, start, end)
+                    return True
+                else:
+                    keyname = gtk.gdk.keyval_name(event.keyval)
+                    #print "Key %s (%d) was pressed" % (keyname, event.keyval)
    
         self.window.connect('key_press_event', on_key_press_event)
 
@@ -529,10 +566,18 @@ class Tideay(object):
 
         self.refresh()
 
-    def rewrite(self, buffer, start, end):
+    def productive_rewrite(self, buffer, start, end):
         buffer.begin_user_action()
         text = buffer.get_text(start, end, True)
-        text = rewrite_text(text)
+        text = rewrite_text(text, PRODUCTIVE_REWRITE_MAP)
+        buffer.delete(start, end)
+        buffer.insert(start, text, len(text))
+        buffer.end_user_action()
+
+    def destructive_rewrite(self, buffer, start, end):
+        buffer.begin_user_action()
+        text = buffer.get_text(start, end, True)
+        text = rewrite_text(text, DESTRUCTIVE_REWRITE_MAP)
         buffer.delete(start, end)
         buffer.insert(start, text, len(text))
         buffer.end_user_action()

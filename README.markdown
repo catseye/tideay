@@ -48,7 +48,7 @@ Features
     
 *   Rewrite-based editing
     
-    In the editing pane, pressing the tab key *rewrites* the string to
+    In the editing pane, pressing the Tab key *rewrites* the string to
     the left of the cursor, based on some internal rewriting rules.  For
     example, `--` is replaced by `—`.  See the source code for the full set
     of rules.  The rewriting rules also implement tabs, in the following way:
@@ -57,6 +57,12 @@ Features
     *   an empty string is replaced by four spaces
     *   a tab character is replaced by two tab characters
     *   `^I` rewrites to tab, so you can otherwise insert a real tab character
+    
+    What Tab does we call "productive" rewriting.  There are also a set of
+    rules for "destructive" rewriting, which are applied when Shift+Backspace
+    is pressed.  The only rule in this set, thus far, is replacing four spaces
+    with an empty string.  This is useful for unindenting, especially when
+    tideay thought you might want an indent but you really didn't.
     
 *   New-block indenting
     
@@ -116,9 +122,8 @@ Wishlist
 
 ### editing ###
 
-*   Shift+Bkspc should delete four spaces, or rather, do a "destructive
-    rewrite", which would just be like Tab except a different set of rules.
-*   tab with selection should not do GtkSourceView's tab with selection
+*   Pressing Tab or Shift-Tab with some text selected should not do whatever
+    it is that GtkSourceView thinks should be done when that happens.
 
 ### command execution ###
 
@@ -126,7 +131,7 @@ Wishlist
 *   Another variant that opens the result in a new buffer, and switches
     to it?  I'm thinking `hg diff $1`.  This would require a buffer
     temp filename strategy.
-
+    
 ### find and replace ###
 
 *   Find should support case-sensitive and maybe whole-world-only search.
