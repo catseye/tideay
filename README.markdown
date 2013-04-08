@@ -8,6 +8,9 @@ tideay is an experimental-ish fork of [pfh][]'s [yaedit][] which may
 
 It aims to keep my development environment neat and... tideay (ugh.)
 
+See "Notes", below, for my thoughts (= rant) on editors, and why I decided
+to start this project.
+
 Requirements
 ------------
 
@@ -138,36 +141,38 @@ There are developers who consider typing ability to be a paramount skill.  I'm
 not one of them.  I'm only a touch-typist in the loosest sense; the words "home
 row" mean nothing to me; I favour my right hand while my left hand is sometimes
 close to useless.  For a software developer, being able to type quickly is a
-"nice-to-have".  Here are some skills that are more valuable than typing:
-ability to conceptualize, ability to explain things clearly, ability to
-break large problems into smaller parts, foresight, mathematical maturity,
+"nice-to-have".  Here are some skills that are more valuable than typing
+quickly: ability to conceptualize, ability to explain things clearly, ability
+to break large problems into smaller parts, foresight, mathematical maturity,
 ability to step back and see the bigger picture, time management, insight into
-how humans deal with change...
+how humans deal with change... (point made yet, or should I go on?)
 
 And I also guess I can't talk about editors without talking about Those Two.
 
-My first exposure to Emacs was its port to the Amiga that came with the
-Amiga OS.  Consider that, wow, this new computer has a *mouse*, and a *GUI*,
-with *windows* and *menus* and... and you want me to edit with... what's this
-terminal-based thing?  This makes no sense.  Amiga Basic was naff, but at
-least its program editor was comprehensible.
+My first exposure to Emacs was its port to the Amiga that came with Amiga OS
+1.3.  Consider that, wow, this new computer is one of the *next generation*:
+it has a *mouse*, and a *GUI*, with *windows* and *menus* and... and you want
+me to edit with... what's this terminal-based thing?  This makes no sense.
+Amiga Basic was naff, but at least its program editor was comprehensible.
 
 My first exposure to Vim was `vi`, on the servers at the university.  I failed
-to see the attraction (but, of course, did not fail to meet people who had
+to see the attraction (but, of course, did not fail to meet people who *had*
 seen the attraction, and hear them talk about the attraction.)  If I had to
 edit something on the server, I would use `pico` (these days it's `nano` or,
 on FreeBSD and friends, `easyedit`).  If I didn't have to edit something on the
-server, I wouldn't.
+server, I wouldn't.  To this day, `:q!` is pretty much all the `vi` I know.
 
-I've never seen the attraction of editors that insist on putting you into a
-"mode" and which only grudgingly accept that we're in the age of the GUI.
+I've never seen the attraction of editors that insist on putting you into one
+of several "modes" and which only grudgingly accept that we're now in the age
+of the GUI.
 
 When I first switched to FreeBSD as my development platform, I used [nedit][].
 It was OK, but I wasn't a fan of its mass of dependencies.
 
 At some point, I switched to [SciTE][], for two reasons:
 
-*   It supports code folding
+*   It supports code folding — although I don't remember if I switched to it
+    before or after reading Nikolai Bezroukov's paper on [Orthodox Editors][]
 *   I was switching between Windows and FreeBSD a lot, and wanted an editor
     that was the same on both of them
 
@@ -202,13 +207,19 @@ close SciTE, I'll open it again for the next edit...
 So — all in all, I thought, you know, maybe I could just find a bare-bones
 editor, and add the things I *do* use to it, in ways that suit *me*.  And I
 remembered yaedit, and that it was good enough, and small enough to hack on.
+And, in the age of version control, maybe saving constantly — treating the
+disk as if it were the main volatile store, the "core memory" for works of
+text — is not a bad paradigm.  Maybe, in fact, it's a better one.  And maybe
+with it, I can figure out a way to keep my editor running all the time instead
+of starting and closing it randomly.
 
-It's a somewhat odd feeling, both acclimating yourself to a new editor (that
-urge to press Ctrl+S will die hard), and at the same time hacking on it, to
-acclimate *it* to *you*.
+As a closing note, I have to say, it's a somewhat odd feeling, both acclimating
+yourself to a new editor (oh but that urge to press Ctrl+S will die hard!), and
+at the same time hacking on it, to acclimate *it* to *you*.
 
-[pfh]: http://www.logarithmic.net/pfh/
-[yaedit]: http://www.logarithmic.net/pfh/yaedit 
-[SciTE]: http://www.scintilla.org/SciTE.html
 [nedit]: http://www.nedit.org/
+[Orthodox Editors]: http://www.softpanorama.org/Articles/orthodox_editors.shtml
+[pfh]: http://www.logarithmic.net/pfh/
+[SciTE]: http://www.scintilla.org/SciTE.html
 [The Humane Interface]: http://en.wikipedia.org/wiki/The_Humane_Interface
+[yaedit]: http://www.logarithmic.net/pfh/yaedit 
