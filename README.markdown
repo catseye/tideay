@@ -8,6 +8,12 @@ tideay is an experimental-ish fork of [pfh][]'s [yaedit][] which may
 
 It aims to keep my development environment neat and... tideay (ugh.)
 
+Requirements
+------------
+
+*   Python 2.7
+*   pygtksourceview2
+
 Controls
 --------
 
@@ -28,21 +34,9 @@ Controls
     Ctrl+A                 select all
     
     Ctrl+Q                 quit tideay
-    
-Notes
------
 
-A full, in-depth analysis of my history with text editors will appear here
-shortly.  In the meantime, know that I currently use [SciTE][] (go ahead, laugh)
-and I'm trying to start using yaedit... or rather tideay... because it's
-easier to hack.  (probably.)
-
-Not having to press Ctrl+S to save feels awkward, but in the age of version
-control, it probably makes more sense, so I'm going to try to get used
-to it.
-
-Changes
--------
+Changes from yaedit
+-------------------
 
 ### display ###
 
@@ -132,6 +126,89 @@ Wishlist
 *   Indicate the 80-column mark in the editing pane.
 *   Some way to force source language highlighting.
 
+Notes
+-----
+
+I guess this fork was precipitated by
+[this article](http://delvarworld.github.io/blog/2013/03/16/just-use-sublime-text/)
+in a roundabout way.
+
+OK, I guess I can't talk about editing without first talking about typing.
+There are developers who consider typing ability to be a paramount skill.  I'm
+not one of them.  I'm only a touch-typist in the loosest sense; the words "home
+row" mean nothing to me; I favour my right hand while my left hand is sometimes
+close to useless.  For a software developer, being able to type quickly is a
+"nice-to-have".  Here are some skills that are more valuable than typing:
+ability to conceptualize, ability to explain things clearly, ability to
+break large problems into smaller parts, foresight, mathematical maturity,
+ability to step back and see the bigger picture, time management, insight into
+how humans deal with change...
+
+And I also guess I can't talk about editors without talking about Those Two.
+
+My first exposure to Emacs was its port to the Amiga that came with the
+Amiga OS.  Consider that, wow, this new computer has a *mouse*, and a *GUI*,
+with *windows* and *menus* and... and you want me to edit with... what's this
+terminal-based thing?  This makes no sense.  Amiga Basic was naff, but at
+least its program editor was comprehensible.
+
+My first exposure to Vim was `vi`, on the servers at the university.  I failed
+to see the attraction (but, of course, did not fail to meet people who had
+seen the attraction, and hear them talk about the attraction.)  If I had to
+edit something on the server, I would use `pico` (these days it's `nano` or,
+on FreeBSD and friends, `easyedit`).  If I didn't have to edit something on the
+server, I wouldn't.
+
+I've never seen the attraction of editors that insist on putting you into a
+"mode" and which only grudgingly accept that we're in the age of the GUI.
+
+When I first switched to FreeBSD as my development platform, I used [nedit][].
+It was OK, but I wasn't a fan of its mass of dependencies.
+
+At some point, I switched to [SciTE][], for two reasons:
+
+*   It supports code folding
+*   I was switching between Windows and FreeBSD a lot, and wanted an editor
+    that was the same on both of them
+
+At some other point, I also read Raskin's [The Humane Interface][] and had
+some thoughts about some of his points about UI's.
+
+A few years ago, Elliott Hird pointed me at yaedit, not really as a
+recommendation so much as a "this is interesting, this is how one guy has
+approached building *his* own editor."  I took it for a spin and couldn't
+really get the hang of it.  When you've built up that Ctrl+S habit to save
+your work, and it's no longer needed, *bleah*, it feels so awkward; and it
+rubs that inner engineer of yours wrong for any program to be constantly
+writing to the disk like that when it doesn't "have" to.
+
+But then, fast forward a few years to now, and I come across that article I
+mentioned, and I start to think about how I use SciTE.  Taking inventory, I
+realize I only use a fraction of its features.  Code folding is nice, but I
+only use it once in a blue moon.  I seriously under-use its Lua scripting.
+I don't use any of its IDE-like features (except by accident, at which point
+they annoy me.)  I always seem to be losing track of its configuration files,
+so features I'd like to use, like abbreviation expansion, I haven't always
+taken the time to set up.
+
+And I have developed some bad habits with SciTE.  The worst, which surely
+predates SciTE itself, is probably that I'll start and close the editor in a
+very ad-hoc fashion.  I want to edit some files, OK, `scite *.py` in the shell.
+OK, I'm done editing, oh, should I close SciTE, or suspend it and `bg` and keep
+it up?  But then I might forget that it's running and run `scite foo.py` again
+and have two copies of `foo.py` open and out of sync and OK, I better just
+close SciTE, I'll open it again for the next edit...
+
+So — all in all, I thought, you know, maybe I could just find a bare-bones
+editor, and add the things I *do* use to it, in ways that suit *me*.  And I
+remembered yaedit, and that it was good enough, and small enough to hack on.
+
+It's a somewhat odd feeling, both acclimating yourself to a new editor (that
+urge to press Ctrl+S will die hard), and at the same time hacking on it, to
+acclimate *it* to *you*.
+
 [pfh]: http://www.logarithmic.net/pfh/
 [yaedit]: http://www.logarithmic.net/pfh/yaedit 
 [SciTE]: http://www.scintilla.org/SciTE.html
+[nedit]: http://www.nedit.org/
+[The Humane Interface]: http://en.wikipedia.org/wiki/The_Humane_Interface
