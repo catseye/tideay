@@ -38,12 +38,60 @@ Controls
     
     Ctrl+Q                 quit tideay
 
-Changes from yaedit
--------------------
+Features
+--------
 
-### display ###
+*   Standard yaedit features
+    
+    *   Continual sync of file under edit to and from disk
+    *   No dialog boxes, etc; see [yaedit][] page for more
+    
+*   Rewrite-based editing
+    
+    In the editing pane, pressing the tab key *rewrites* the string to
+    the left of the cursor, based on some internal rewriting rules.  For
+    example, `--` is replaced by `—`.  See the source code for the full set
+    of rules.  The rewriting rules also implement tabs, in the following way:
+    
+    *   four spaces are replaced by eight spaces
+    *   an empty string is replaced by four spaces
+    *   a tab character is replaced by two tab characters
+    *   `^I` rewrites to tab, so you can otherwise insert a real tab character
+    
+*   New-block indenting
+    
+    Typing Enter after a `{` or `(` or `[` or `:`, or on a line that begins
+    with `*   ` or `-   `, indents the next line (another) four spaces.
+    Most languages benefit from the brackets, Python benefits from the colon,
+    and Markdown benefits from the `*`/`-` for lists.
+    
+*   Command execution
+    
+    Typing Ctrl+Enter interprets the line (everything left of the cursor)
+    as a shell command and executes it.  Note that this is a little
+    experimental, and the exact usage may vary in the future, but for now,
+    there are three styles:
+    
+    *   Ordinarily, the command that is executed is replaced by the standard
+        output produced by running the command.  This is, among other things,
+        a neat way to include snippets into the file
+        (e.g. `cat snippet.txt` Ctrl+Enter).
+    *   If the line begins with `%`, the command is not replaced; the output is
+        appended underneath it, along with another line prefaced with `% `.
+        The resultant effect of is that of a pseudo-shell of sorts.  This could
+        be useful for inserting shell "how-to" instructions into documentation.
+    *   If the line begins with `|`, the current file is piped into the command,
+        and the *entire* buffer is replaced by the result.  (This is a single
+        user action, so it can be undone with Ctrl+Z.)  This can be useful
+        in oh-so-many ways, for example `|indent` to indent your C source code,
+        `|grep -v blah` to delete all lines from the buffer containing `blah`,
+        and so forth.
 
-*   Smaller font.
+Other changes/improvements over yaedit
+--------------------------------------
+
+*   Editor pane uses a smaller font.  Window is initially sized to show 80
+    columns (on my equipment; with different fonts or whatnot, YMMV.)
 *   Notebook's tab pane (on the left) has a fixed width.  Long filenames will
     not expand it and ruin the 80-column width of the editor pane.
 *   Height of each label in the tab pane is smaller.
@@ -51,39 +99,15 @@ Changes from yaedit
     the label.  Full (relative) path to file is shown in the window title.
 *   No tooltips (they don't show up on hover for me anyway.)  Controls are
     documented in this README for now.
-
-### editing ###
-
 *   The hashbang line of the file will be sniffed if the language cannot be
     determined from the the file extension.  Currently supports Python, Ruby,
     and shell.
-*   In the editing pane, pressing the tab key *rewrites* the string to
-    the left of the cursor, based on some internal rewriting rules.  For
-    example, `--` is replaced by `—`.  See the source code for the full set
-    of rules.  The rewriting rules implement tabs in the following way:
-    *   four spaces are replaced by eight spaces
-    *   an empty string is replaced by four spaces
-    *   a tab character is replaced by two tab characters
-    *   `^I` rewrites to tab, so you can otherwise insert a real tab character
-*   Typing Enter after a `{` or `(` or `[` or `:`, or on a line that begins
-    with `*   ` or `-   `, indents the next line (another) four spaces.
-    Most languages benefit from the brackets, Python benefits from the colon,
-    and Markdown benefits from the `*`/`-` for lists.
-*   Typing Ctrl+Enter interprets the line as a shell command and executes it,
-    replacing the line with the standard output produced by the command.
-    If the line begins with `%`, the command is not replaced; the output is
-    appended underneath it, along with another line prefaced with `% ` — the
-    effect being a pseudo-shell of sorts.
-    Note that Ctrl+Enter is a little experimental, and the exact usage may vary
-    in the future.  For now, it is, among other things, a neat way to include
-    snippets into the file (`cat snippet.txt` Ctrl+Enter).
 
 Wishlist
 --------
 
 ### display ###
 
-*   Show column position of cursor.
 *   When notebook tab pane exceeds height of window, you can only scroll down
     as far as the "open" entry.  You can't seem to use "find" etc properly.
     Ensuring the controls are visible, while only the buffer tabs scroll,
@@ -96,6 +120,13 @@ Wishlist
     rewrite", which would just be like Tab except a different set of rules.
 *   tab with selection should not do GtkSourceView's tab with selection
 
+### command execution ###
+
+*   Replace `$1` (or something?) with the name of the current file.
+*   Another variant that opens the result in a new buffer, and switches
+    to it?  I'm thinking `hg diff $1`.  This would require a buffer
+    temp filename strategy.
+
 ### find and replace ###
 
 *   Find should support case-sensitive and maybe whole-world-only search.
@@ -106,11 +137,15 @@ Wishlist
 
 ### buffers ###
 
+*   **Some way to switch to a buffer by typing in part of its filename.**
 *   Should not be possible to open 2 copies of the same file.
 *   Should be able to populate buffers from all "interesting" files in the
     current directory tree.  (repository <=> workspace)
 *   Some nice way to move/copy a buffer while inside the editor.
-*   Some way to switch to a buffer by typing in part of its filename.
+*   When file backing buffer is deleted by the system, close the buffer?
+    (Argument against: maybe it was accidental and buffer is only remaining
+    copy of what was there.  Maybe "deaden" the buffer.  Maybe recreate the
+    file...)
 
 ### other ###
 
@@ -129,6 +164,7 @@ Wishlist
 
 *   Indicate the 80-column mark in the editing pane.
 *   Some way to force source language highlighting.
+*   Show column position of cursor.
 
 Notes
 -----

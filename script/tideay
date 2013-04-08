@@ -440,7 +440,7 @@ class Tideay(object):
                     return True
                 elif event.keyval == KEYVAL_RETURN:
                     if event.state & gtk.gdk.CONTROL_MASK:
-                        self.execute_command(buffer, start, end)
+                        self.execute_command(editor, buffer, start, end)
                         return True
                     else:
                         self.possibly_indent_new_block(buffer, start, end)
@@ -546,13 +546,23 @@ class Tideay(object):
                 widget.insert_at_cursor(u'    ', 4)
             gtk.idle_add(insert_four_spaces, buffer)
 
-    def execute_command(self, buffer, start, end):
+    def execute_command(self, sourceview, buffer, start, end):
+        editor = self.get_editor_from_sourceview(sourceview)
         buffer.begin_user_action()
         command = buffer.get_text(start, end, True)
         shell_mode = False
+        pipe_mode = False
         if command.startswith('%'):
             command = command[1:]
             shell_mode = True
+        elif command.startswith('|'):
+            command = command[1:]
+            command = '%s < %s' % (
+                command, editor.filename
+            )
+            buffer.delete(start, end)
+            editor.save_to_disk()
+            pipe_mode = True
         command = command.strip()
         pipe = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
         output = pipe.communicate()[0]
@@ -562,6 +572,8 @@ class Tideay(object):
             def insert_prompt(widget):
                 widget.insert_at_cursor(u'% ', 2)
             gtk.idle_add(insert_prompt, buffer)
+        elif pipe_mode:
+            buffer.set_text(output)
         else:
             buffer.delete(start, end)
             buffer.insert(start, output, len(output))
@@ -574,6 +586,12 @@ class Tideay(object):
             self.window.set_title('%s - tideay' % editor.filename)
         else:
             self.window.set_title('tideay')
+
+    def get_editor_from_sourceview(self, sourceview):
+        for key in self.editors:
+            if key.child is sourceview:
+                return self.editors[key]
+        return None
 
     def prefix_edited(self, *ignore):
         if self.busy:
