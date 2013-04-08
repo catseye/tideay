@@ -206,14 +206,31 @@ def get_prefix(lines):
 
 
 # not a dict, because order matters, and we iterate it anyway
-# TODO: more mathematical symbols (follow LaTeX? or HTML entities?)
+# some symbols are supported from HTML entity names, minus the ;
+# (LaTeX might also be supported, but redundancy is OK here)
+# TODO maybe just find a Python module that already does HTMLentities
 PRODUCTIVE_REWRITE_MAP = (
-    # four characters
+    # four or more characters
     (u'    ', u'        '),
+    (u'&cap', u'∩'),
+    (u'&cup', u'∪'),
+    (u'&sub', u'⊂'),
+    (u'&sup', u'⊃'),
+    (u'&isin', u'∈'),
+    (u'&notin', u'∉'),
+    (u'&alpha', u'α'),
+    (u'&beta', u'β'),
+    (u'&gamma', u'γ'),
+    (u'&delta', u'δ'),
+    (u'&zeta', u'ζ'),
+    (u'&theta', u'θ'),
+    (u'&lambda', u'λ'),
     # three characters
     (u'(c)', u'©'),
     (u'GBP', u'£'),
     (u'EUR', u'€'),
+    (u".'.", u'∴'),
+    (u'<->', u'↔'),
     # two characters
     (u"''", u'ˮ'),   # this is a dbl-apo U+02EE.  maybe primes ′ ″ ‴ instead ?
     (u'--', u'—'),
@@ -226,13 +243,19 @@ PRODUCTIVE_REWRITE_MAP = (
     (u'[[', u'⟦'),
     (u']]', u'⟧'),
     (u'<=', u'≤'),
+    (u'⊂=', u'⊆'),
     (u'>=', u'≥'),
+    (u'⊃=', u'⊇'),
     (u'/=', u'≠'),
     (u'c/', u'¢'),
     (u'<3', u'♡'),
     (u'&&', u'⌘'),
     (u'*5', u'☆'),
     (u'<>', u'♢'),
+    (u'{}', u'∅'),
+    (u'./', u'÷'),
+    (u'.*', u'×'),
+    (u'.^', u'·'),
     (u'^I', u'\t'),
     (u'a`', u'à'),
     (u"a'", u'á'),
@@ -248,6 +271,7 @@ PRODUCTIVE_REWRITE_MAP = (
     (u'U:', u'Ü'),
     (u"u'", u'ú'),
     (u'ae', u'æ'),
+    (u'AE', u'Æ'),
     # one character.  note the swapping.
     (u'♡', u'♥'),
     (u'♥', u'♡'),
@@ -255,6 +279,8 @@ PRODUCTIVE_REWRITE_MAP = (
     (u'★', u'☆'),
     (u'♢', u'♦'),
     (u'♦', u'♢'),
+    (u'·', u'•'),
+    (u'•', u'·'),
     (u'\t', u'\t\t'),
 )
 

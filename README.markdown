@@ -130,6 +130,8 @@ Wishlist
 
 *   Pressing Tab or Shift-Tab with some text selected should not do whatever
     it is that GtkSourceView thinks should be done when that happens.
+*   Check to see if a rewrite can happen for Tab/Shift+Bkspc.  If not, don't
+    start a user action (less to undo.)
 
 ### command execution ###
 
@@ -138,6 +140,9 @@ Wishlist
     to it?  I'm thinking `hg diff $1`.  This would require a buffer
     temp filename strategy.  (And it would be nice if, in this case,
     the filename ended with `.diff`, to get the highlighting.)
+    Maybe we could just check to see if the command string included
+    a string like `>foo.txt` with spaces on either side, and use that
+    as the name.
     
 ### find and replace ###
 
@@ -185,7 +190,13 @@ Wishlist
     with their output `tee`d to a file, and it's this file that's inserted
     when it's done.  This would also let you run commands which require a
     password to be entered.
-
+*   Key combination to select URL under cursor (double/triple-clicking doesn't
+    cut it) and (further key combination to?) open it using the default
+    browser.
+*   Should destructive rewriting be the inverse map of productive?  If
+    `''` is a special case in the map then this could work, because `''`
+    rewrites to four spaces.
+    
 ### low priority ###
 
 *   Indicate the 80-column mark in the editing pane.
