@@ -29,6 +29,9 @@ Controls
     Ctrl+P                 alter common prefix of selected lines
     Ctrl+Enter             execute shell command and insert result
     
+    Tab                    "productively" rewrite string to left of cursor
+    Shift+Backspace        "destructively" rewrite string to left of cursor
+    
     Ctrl+Z                 undo
     Ctrl+Shift+Z           redo
     Ctrl+X                 cut
@@ -58,7 +61,7 @@ Features
     *   a tab character is replaced by two tab characters
     *   `^I` rewrites to tab, so you can otherwise insert a real tab character
     
-    What Tab does we call "productive" rewriting.  There are also a set of
+    What Tab does we call "productive" rewriting.  There is also a set of
     rules for "destructive" rewriting, which are applied when Shift+Backspace
     is pressed.  The only rule in this set, thus far, is replacing four spaces
     with an empty string.  This is useful for unindenting, especially when
@@ -67,9 +70,9 @@ Features
 *   New-block indenting
     
     Typing Enter after a `{` or `(` or `[` or `:`, or on a line that begins
-    with `*   ` or `-   `, indents the next line (another) four spaces.
-    Most languages benefit from the brackets, Python benefits from the colon,
-    and Markdown benefits from the `*`/`-` for lists.
+    with `*` or `-` followed by three spaces, indents the next line (another)
+    four spaces.  Most languages benefit from the brackets, Python benefits
+    from the colon, and Markdown benefits from the `*`/`-` for lists.
     
 *   Command execution
     
@@ -118,7 +121,10 @@ Wishlist
     as far as the "open" entry.  You can't seem to use "find" etc properly.
     Ensuring the controls are visible, while only the buffer tabs scroll,
     would be nice (but it doesn't look like GtkNotebook supports this much.)
-*   Visible whitespace (space, tab, LF) would be *really* nice.
+*   Visible whitespace (space, tab, LF) would be *really* nice.  Doesn't look
+    like GtkSourceView supports changing the displayed appearance of a
+    character, but can you make your own syntax highlighting rules, and could
+    you make one for whitespace?
 
 ### editing ###
 
@@ -130,7 +136,8 @@ Wishlist
 *   Replace `$1` (or something?) with the name of the current file.
 *   Another variant that opens the result in a new buffer, and switches
     to it?  I'm thinking `hg diff $1`.  This would require a buffer
-    temp filename strategy.
+    temp filename strategy.  (And it would be nice if, in this case,
+    the filename ended with `.diff`, to get the highlighting.)
     
 ### find and replace ###
 
@@ -151,19 +158,33 @@ Wishlist
     (Argument against: maybe it was accidental and buffer is only remaining
     copy of what was there.  Maybe "deaden" the buffer.  Maybe recreate the
     file...)
+*   When opening a new file, cursor position is at bottom of file, but
+    view is scrolled to top of file.  Maybe move cursor to top, too.
 
-### other ###
+### internals ###
 
-*   Running a shell command — there should there be some way to retain the
-    command you ran.  Maybe by default, but it gets selected, so that you
-    can immediately delete it?  Not sure.
-*   Loose integration with version control, along those lines.  Make it easy
-    to see what the hg/git/&c diff of the current buffer looks like.  Make it
-    easy to commit.  These might be external to the editor itself, but there
-    should be an easy way to *do* them from the editor.
+*   Some methods on `Tideay` are just too long.
+*   Some methods on `Tideay` should be methods on `Editor`.
+*   Often a variable called `editor` actually contains a `ScrollView` object.
+
+### other wild ideas ###
+
 *   You maybe shouldn't, by default, be allowed to start multiple instances
     of tideay... trying to should just open the tab in the currently-
-    running tideay.
+    running tideay.  Or — maybe only one instance per working directory
+    (assumed to be a repo clone.)
+*   Plugins.  These should just be Python files, in a subdirectory of your
+    home directory (maybe?) which are sourced upon startup.  tideay could
+    ship with some, but you'd have to install them yourself.  The rewriting
+    maps could be among them, so you could override the builtin rewrite rules
+    with your own.  But the builtin ones could also be plugins, in a dir in
+    the distribution... which tideay also reads... or something.
+*   VTE widget.  For... I don't know.  The thing is, the shell commands do
+    not stream their output, and if you say, like, `nano` Ctrl+Enter, it's
+    your funeral.  So maybe the commands could be run in a terminal pane,
+    with their output `tee`d to a file, and it's this file that's inserted
+    when it's done.  This would also let you run commands which require a
+    password to be entered.
 
 ### low priority ###
 
