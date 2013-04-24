@@ -112,6 +112,16 @@ Other changes/improvements over yaedit
     determined from the the file extension.  Currently supports Python, Ruby,
     and shell.
 
+Protips
+-------
+
+*   To get Markdown syntax highlighting, install gtksourceview-3.0, and copy
+    `markdown.lang` from its `language-specs` share directory into
+    gtksourceview-2.0's `language-specs` share directory.  Also make sure your
+    `/etc/mimetypes` file contains a line like this one:
+    
+        text/x-markdown            markdown md
+
 Wishlist
 --------
 
