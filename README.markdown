@@ -95,6 +95,10 @@ Features
         in oh-so-many ways, for example `|indent` to indent your C source code,
         `|grep -v blah` to delete all lines from the buffer containing `blah`,
         and so forth.
+    *   If the line begins with `cd `, the current directory is changed to what
+        follows this (if that text names a valid directory).  Since the current
+        directory is a property of the process, this cannot be done by
+        executing a `cd` command in the shell.
 
 Other changes/improvements over yaedit
 --------------------------------------
@@ -142,6 +146,8 @@ Wishlist
     it is that GtkSourceView thinks should be done when that happens.
 *   Check to see if a rewrite can happen for Tab/Shift+Bkspc.  If not, don't
     start a user action (less to undo.)
+*   Ctrl+P will de-focus the editing pane, even if no lines/a single line
+    is selected.  This can be annoying.  Not sure how to handle this yet.
 
 ### command execution ###
 
@@ -156,9 +162,11 @@ Wishlist
     
 ### find and replace ###
 
+*   **Ctrl+F find should populate find-entry with selected text.**
 *   Find should support case-sensitive and maybe whole-world-only search.
-*   Replace found text with new text.
-*   Ctrl+F find should populate find-entry with selected text.
+*   Replace found text with new text.  (This can be done with `|sed`,
+    but I don't like `sed`, so maybe supply a command-line tool with
+    a simpler interface, like `replace foo bar`.)
 *   Mark and move to mark (like Ctrl+F2/F2 in SciTE)
 *   Next and Prev should have keyboard shortcuts.
 
@@ -193,7 +201,9 @@ Wishlist
     ship with some, but you'd have to install them yourself.  The rewriting
     maps could be among them, so you could override the builtin rewrite rules
     with your own.  But the builtin ones could also be plugins, in a dir in
-    the distribution... which tideay also reads... or something.
+    the distribution... which tideay also reads... or something.  But then,
+    this is *my* editor, so, why?  If someone else wants to fork it, that's
+    great, and they can just make the changes to their fork.  I dunno.
 *   VTE widget.  For... I don't know.  The thing is, the shell commands do
     not stream their output, and if you say, like, `nano` Ctrl+Enter, it's
     your funeral.  So maybe the commands could be run in a terminal pane,
@@ -206,7 +216,10 @@ Wishlist
 *   Should destructive rewriting be the inverse map of productive?  If
     `''` is a special case in the map then this could work, because `''`
     rewrites to four spaces.
-    
+*   Changing directory should support toolshelf — look to see if `toolshelf`
+    is present on the path, and if so, call `toolshelf pwd` and see if that
+    returns a sensible result, and if so, change dir to that instead.
+
 ### low priority ###
 
 *   Indicate the 80-column mark in the editing pane.
