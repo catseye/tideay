@@ -303,6 +303,7 @@ def rewrite_text(text, map):
 
 class Editor(object):
     def __init__(self, filename):
+        filename = os.path.abspath(filename)
         self.filename = filename
         if SV2:
             self.buffer = gtksourceview2.Buffer()
@@ -643,12 +644,10 @@ class Tideay(object):
             output = pipe.communicate()[0]
             buffer.set_text(output)
         elif command.startswith('cd '):
-            # experimental!!
-            # doesn't work properly yet.
-            # TODO: check that the directory exists
-            # TODO: rename all open files to be relative to the new directory
             dirname = command[3:]
-            os.chdir(dirname)
+            if os.path.isdir(dirname):
+                os.chdir(dirname)
+                self.set_window_title(-1, editor)
             buffer.set_text('')
         else:
             pipe = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
@@ -657,11 +656,14 @@ class Tideay(object):
             buffer.insert(start, output, len(output))
         buffer.end_user_action()
 
-    def set_window_title(self, page_number):
-        scrolly = self.notebook.get_nth_page(page_number)
-        editor = self.editors.get(scrolly, None)
+    def set_window_title(self, page_number, editor=None):
+        if editor is None:
+            scrolly = self.notebook.get_nth_page(page_number)
+            editor = self.editors.get(scrolly, None)
         if editor:
-            self.window.set_title('%s - tideay' % editor.filename)
+            self.window.set_title(
+                '%s - tideay' % os.path.relpath(editor.filename)
+            )
         else:
             self.window.set_title('tideay')
 
