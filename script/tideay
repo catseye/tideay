@@ -205,9 +205,9 @@ def get_prefix(lines):
     return prefix
 
 
-# not a dict, because order matters, and we iterate it anyway
+# not a dict, because order matters, and we iterate it anyway.
 # some symbols are supported from HTML entity names, minus the ;
-# (LaTeX might also be supported, but redundancy is OK here)
+# (LaTeX might also be supported in the future, but redundancy is OK here)
 # TODO maybe just find a Python module that already does HTMLentities
 PRODUCTIVE_REWRITE_MAP = (
     # four or more characters
@@ -622,11 +622,16 @@ class Tideay(object):
         editor = self.get_editor_from_sourceview(sourceview)
         buffer.begin_user_action()
         command = buffer.get_text(start, end, True)
-        shell_mode = False
-        pipe_mode = False
         if command.startswith('%'):
             command = command[1:]
-            shell_mode = True
+            command = command.strip()
+            pipe = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
+            output = pipe.communicate()[0]
+            output = '\n' + output
+            buffer.insert(end, output, len(output))
+            def insert_prompt(widget):
+                widget.insert_at_cursor(u'% ', 2)
+            gtk.idle_add(insert_prompt, buffer)
         elif command.startswith('|'):
             command = command[1:]
             command = '%s < %s' % (
@@ -634,19 +639,12 @@ class Tideay(object):
             )
             buffer.delete(start, end)
             editor.save_to_disk()
-            pipe_mode = True
-        command = command.strip()
-        pipe = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
-        output = pipe.communicate()[0]
-        if shell_mode:
-            output = '\n' + output
-            buffer.insert(end, output, len(output))
-            def insert_prompt(widget):
-                widget.insert_at_cursor(u'% ', 2)
-            gtk.idle_add(insert_prompt, buffer)
-        elif pipe_mode:
+            pipe = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
+            output = pipe.communicate()[0]
             buffer.set_text(output)
         else:
+            pipe = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
+            output = pipe.communicate()[0]
             buffer.delete(start, end)
             buffer.insert(start, output, len(output))
         buffer.end_user_action()
