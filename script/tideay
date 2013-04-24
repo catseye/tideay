@@ -642,6 +642,14 @@ class Tideay(object):
             pipe = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
             output = pipe.communicate()[0]
             buffer.set_text(output)
+        elif command.startswith('cd '):
+            # experimental!!
+            # doesn't work properly yet.
+            # TODO: check that the directory exists
+            # TODO: rename all open files to be relative to the new directory
+            dirname = command[3:]
+            os.chdir(dirname)
+            buffer.set_text('')
         else:
             pipe = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
             output = pipe.communicate()[0]
