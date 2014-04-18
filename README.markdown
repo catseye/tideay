@@ -192,10 +192,11 @@ Wishlist
 
 ### other wild ideas ###
 
-*   You maybe shouldn't, by default, be allowed to start multiple instances
-    of tideay... trying to should just open the tab in the currently-
-    running tideay.  Or — maybe only one instance per working directory
-    (assumed to be a repo clone.)
+*   When trying to start tideay when tideay is already running — send the
+    running instance a message telling it to open the files that we were
+    asked to open.
+*   Or — maybe only one instance per working directory (assumed to be a repo
+    clone directory)?
 *   Plugins.  These should just be Python files, in a subdirectory of your
     home directory (maybe?) which are sourced upon startup.  tideay could
     ship with some, but you'd have to install them yourself.  The rewriting

@@ -64,6 +64,7 @@ except:
 import mimetypes
 import os
 import re
+import socket
 import subprocess
 import sys
 import weakref
@@ -394,6 +395,13 @@ class Editor(object):
 
 class Tideay(object):
     def __init__(self, filenames):
+        
+        self.lock_socket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+        try:
+            self.lock_socket.bind('\0tideay')
+        except socket.error:
+            raise EnvironmentError('tideay is already running')
+
         # keys are gtk ScrollViews (what's added to the notebook)
         # values are Editor objects (defined in this source)
         self.editors = weakref.WeakKeyDictionary()
