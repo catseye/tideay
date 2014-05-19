@@ -516,7 +516,15 @@ class Tideay(object):
         #self.notebook.append_page(toolbox, label)
 
         self.window = gtk.Window()
-        self.window.resize(825, 740)  # 820x745 with a little padding
+        # default dimensions are 820x745 with a little padding.
+        # width is contrived to make the text area 80 columns wide.
+        window_width = 825
+        if 'TIDEAY_WIDTH' in os.environ:
+            window_width = int(os.environ['TIDEAY_WIDTH'])
+        window_height = 740
+        if 'TIDEAY_HEIGHT' in os.environ:
+            window_height = int(os.environ['TIDEAY_HEIGHT'])
+        self.window.resize(window_width, window_height)
         self.window.add(self.notebook)
 
         def delete_event(*etc):
