@@ -222,21 +222,40 @@ PRODUCTIVE_REWRITE_MAP = (
     (u'&sup', u'⊃'),
     (u'&isin', u'∈'),
     (u'&notin', u'∉'),
+    # greek alphabet (three or more characters)
     (u'&alpha', u'α'),
     (u'&beta', u'β'),
     (u'&gamma', u'γ'),
     (u'&delta', u'δ'),
+    (u'&epsilon', u'ε'),
     (u'&zeta', u'ζ'),
     (u'&theta', u'θ'),
+    (u'&iota', u'ι'),
+    (u'&kappa', u'κ'),
     (u'&lambda', u'λ'),
+    (u'&mu', u'μ'),
+    (u'&nu', u'ν'),
+    (u'&xi', u'ξ'),
+    (u'&omicron', u'ο'),
+    (u'&pi', u'π'),
+    (u'&rho', u'ρ'),
+    (u'&sigma', u'σ'),
+    (u'&tau', u'τ'),
+    (u'&upsilon', u'υ'),
+    (u'&phi', u'φ'),
+    (u'&chi', u'χ'),
+    (u'&psi', u'ψ'),
+    (u'&omega', u'ω'),
     # three characters
     (u'(c)', u'©'),
     (u'GBP', u'£'),
     (u'EUR', u'€'),
     (u".'.", u'∴'),
     (u'<->', u'↔'),
+    (u"```", u'‴'),
     # two characters
-    (u"''", u'ˮ'),   # this is a dbl-apo U+02EE.  maybe primes ′ ″ ‴ instead ?
+    (u"''", u'ˮ'),   # this is a dbl-apo U+02EE.
+    (u"``", u'″'),
     (u'--', u'—'),
     (u'->', u'→'),
     (u'<-', u'←'),
@@ -246,6 +265,10 @@ PRODUCTIVE_REWRITE_MAP = (
     (u'>>', u'»'),
     (u'[[', u'⟦'),
     (u']]', u'⟧'),
+    (u'<.', u'⟨'),
+    (u'.>', u'⟩'),
+    (u'[^', u'「'),
+    (u'^]', u'」'),
     (u'<=', u'≤'),
     (u'⊂=', u'⊆'),
     (u'>=', u'≥'),
@@ -257,6 +280,7 @@ PRODUCTIVE_REWRITE_MAP = (
     (u'*5', u'☆'),
     (u'<>', u'♢'),
     (u'{}', u'∅'),
+    (u'[]', u'□'),
     (u'./', u'÷'),
     (u'.*', u'×'),
     (u'.^', u'·'),
@@ -285,6 +309,11 @@ PRODUCTIVE_REWRITE_MAP = (
     (u'♦', u'♢'),
     (u'·', u'•'),
     (u'•', u'·'),
+    (u'□', u'■'),
+    (u'■', u'□'),
+    (u'σ', u'ς'),
+    (u'ς', u'σ'),
+    (u"`", u'′'),
     (u'\t', u'\t\t'),
 )
 
@@ -933,7 +962,7 @@ class Tideay(object):
             scrolly.destroy()
             hbox.destroy()
 
-        closer = gtk.Button(unichr(10005).encode('utf-8'))
+        closer = gtk.Button('x'.encode('utf-8'))
         closer.set_relief(gtk.RELIEF_NONE)
         closer.child.modify_font(pango.FontDescription('7'))
         closer.connect('clicked', close)
