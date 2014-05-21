@@ -425,11 +425,12 @@ class Editor(object):
 class Tideay(object):
     def __init__(self, filenames):
         
+        cwd = os.path.realpath(os.getcwd())
         self.lock_socket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
         try:
-            self.lock_socket.bind('\0tideay')
+            self.lock_socket.bind('\0tideay' + cwd)
         except socket.error:
-            raise EnvironmentError('tideay is already running')
+            raise EnvironmentError('tideay is already running in directory %s' % cwd)
 
         # keys are gtk ScrollViews (what's added to the notebook)
         # values are Editor objects (defined in this source)

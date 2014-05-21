@@ -73,7 +73,16 @@ Features
     with `*` or `-` followed by three spaces, indents the next line (another)
     four spaces.  Most languages benefit from the brackets, Python benefits
     from the colon, and Markdown benefits from the `*`/`-` for lists.
+
+*   Attempted workflow integration
     
+    It's definitely not an IDE, but...
+    
+    Only one copy of tideay can be started from any given directory.  This
+    is to discourage two copies from trampling each others' files.  (It
+    doesn't outright prevent it, because you can open a file like
+    `../otherproj/README`, but that case is less common.)
+
 *   Command execution
     
     Typing Ctrl+Enter interprets the line (everything left of the cursor)
