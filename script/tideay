@@ -442,7 +442,14 @@ class Tideay(object):
         self.notebook.set_scrollable(True)
 
         self.create_open_widget()
-        self.create_line_find_prefix_widget()
+        vbox = self.create_line_find_prefix_widget()
+
+        # for showing the current file when the line find prefix widget is
+        # focused. or rather, not focusing it.  honestly, this is a bit hacky.
+        page = gtk.Label('')
+        self.notebook.append_page(page, vbox)
+
+        #self.create_project_widget()
 
         def on_switch(widget, _, page_number):
             self.set_window_title(page_number)
@@ -584,15 +591,15 @@ class Tideay(object):
         self.refresh()
 
     def create_open_widget(self):
-        open_vbox = gtk.VBox(False, 5)
+        vbox = gtk.VBox(False, 5)
         label = gtk.Label('open')
         label.set_alignment(0.0, 0.0)
         label.show()
-        open_vbox.pack_start(label, False, False)
+        vbox.pack_start(label, False, False)
 
         open_entry, scroller = make_file_completion(self.open_editor)
-        open_vbox.pack_start(open_entry, True, True)
-        self.notebook.append_page(scroller, open_vbox)
+        vbox.pack_start(open_entry, True, True)
+        self.notebook.append_page(scroller, vbox)
 
         def focusin(*etc):
             self.notebook.set_current_page(self.notebook.page_num(scroller))
@@ -647,9 +654,19 @@ class Tideay(object):
         vbox.pack_start(self.prefix_entry, False, False)
 
         vbox.show_all()
+        return vbox
 
-        page = gtk.Label('')
-        self.notebook.append_page(page, vbox)
+    def create_project_widget(self):
+        vbox = gtk.VBox(False, 5)
+        label = gtk.Label('project')
+        label.set_alignment(0.0, 0.0)
+        label.show()
+        vbox.pack_start(label, False, False)
+
+        project_entry = gtk.Entry()
+        vbox.pack_start(project_entry, True, True)
+        project_page = gtk.Entry()  # ?!?
+        self.notebook.append_page(project_page, vbox)
 
     def productive_rewrite(self, buffer, start, end):
         buffer.begin_user_action()
