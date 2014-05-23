@@ -2,7 +2,7 @@
 # encoding: UTF-8
 
 #    Copyright (C) 2007 Paul Harrison
-#    Portions copyright (C) 2013 Chris Pressey, Cat's Eye Technologies
+#    Portions copyright (C) 2013-2014 Chris Pressey, Cat's Eye Technologies
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
 #    the Free Software Foundation; either version 2 of the License, or
@@ -441,68 +441,8 @@ class Tideay(object):
         self.notebook.set_tab_pos(gtk.POS_LEFT)
         self.notebook.set_scrollable(True)
 
-        open_vbox = gtk.VBox(False, 5)
-        label = gtk.Label('open')
-        label.set_alignment(0.0, 0.0)
-        label.show()
-        open_vbox.pack_start(label, False, False)
-
-        open_entry, scroller = make_file_completion(self.open_editor)
-        open_vbox.pack_start(open_entry, True, True)
-        self.notebook.append_page(scroller, open_vbox)
-
-        def focusin(*etc):
-            self.notebook.set_current_page(self.notebook.page_num(scroller))
-            open_entry.grab_focus()
-
-        open_entry.connect('focus-in-event', focusin)
-
-        vbox = gtk.VBox(False, 5)
-
-        label = gtk.Label('line')
-        label.set_alignment(0.0, 0.0)
-        vbox.pack_start(label, False, False)
-
-        self.line_entry = gtk.Entry()
-        self.line_entry.connect('changed', self.line_edited)
-        self.line_entry.connect('activate', self.entry_activate)
-        vbox.pack_start(self.line_entry, False, False)
-
-        label = gtk.Label('find')
-        label.set_alignment(0.0, 0.0)
-        vbox.pack_start(label, False, False)
-
-        self.find_entry = gtk.Entry()
-        self.find_entry.connect('changed', self.find_edited)
-        self.find_entry.connect('activate', self.entry_activate)
-        allow_tabs_in_entry(self.find_entry)
-        vbox.pack_start(self.find_entry, False, False)
-
-        self.find_hbox = gtk.HBox(False, 0)
-        vbox.pack_start(self.find_hbox, False, False)
-
-        left = gtk.Button('prev')
-        left.connect('clicked', self.find_prev)
-        self.find_hbox.pack_start(left)
-        right = gtk.Button('next')
-        right.connect('clicked', self.find_next)
-        self.find_hbox.pack_start(right)
-
-        self.prefix_label = gtk.Label('prefix')
-        self.prefix_label.set_alignment(0.0, 0.0)
-        vbox.pack_start(self.prefix_label, False, False)
-
-        self.prefix_entry = gtk.Entry()
-        self.prefix_entry.connect('changed', self.prefix_edited)
-        self.prefix_entry.connect('activate', self.entry_activate)
-        allow_tabs_in_entry(self.prefix_entry)
-
-        vbox.pack_start(self.prefix_entry, False, False)
-
-        vbox.show_all()
-
-        page = gtk.Label('')
-        self.notebook.append_page(page, vbox)
+        self.create_open_widget()
+        self.create_line_find_prefix_widget()
 
         def on_switch(widget, _, page_number):
             self.set_window_title(page_number)
@@ -642,6 +582,74 @@ class Tideay(object):
         gobject.timeout_add(1000, timeout)
 
         self.refresh()
+
+    def create_open_widget(self):
+        open_vbox = gtk.VBox(False, 5)
+        label = gtk.Label('open')
+        label.set_alignment(0.0, 0.0)
+        label.show()
+        open_vbox.pack_start(label, False, False)
+
+        open_entry, scroller = make_file_completion(self.open_editor)
+        open_vbox.pack_start(open_entry, True, True)
+        self.notebook.append_page(scroller, open_vbox)
+
+        def focusin(*etc):
+            self.notebook.set_current_page(self.notebook.page_num(scroller))
+            open_entry.grab_focus()
+
+        open_entry.connect('focus-in-event', focusin)
+
+    def create_line_find_prefix_widget(self):
+        vbox = gtk.VBox(False, 5)
+        
+        # line
+        label = gtk.Label('line')
+        label.set_alignment(0.0, 0.0)
+        vbox.pack_start(label, False, False)
+
+        self.line_entry = gtk.Entry()
+        self.line_entry.connect('changed', self.line_edited)
+        self.line_entry.connect('activate', self.entry_activate)
+        vbox.pack_start(self.line_entry, False, False)
+
+        # find
+        label = gtk.Label('find')
+        label.set_alignment(0.0, 0.0)
+        vbox.pack_start(label, False, False)
+
+        self.find_entry = gtk.Entry()
+        self.find_entry.connect('changed', self.find_edited)
+        self.find_entry.connect('activate', self.entry_activate)
+        allow_tabs_in_entry(self.find_entry)
+        vbox.pack_start(self.find_entry, False, False)
+
+        self.find_hbox = gtk.HBox(False, 0)
+        vbox.pack_start(self.find_hbox, False, False)
+
+        left = gtk.Button('prev')
+        left.connect('clicked', self.find_prev)
+        self.find_hbox.pack_start(left)
+        right = gtk.Button('next')
+        right.connect('clicked', self.find_next)
+        self.find_hbox.pack_start(right)
+
+        # prefix
+        self.prefix_label = gtk.Label('prefix')
+        self.prefix_label.set_alignment(0.0, 0.0)
+        vbox.pack_start(self.prefix_label, False, False)
+
+        self.prefix_entry = gtk.Entry()
+        self.prefix_entry.connect('changed', self.prefix_edited)
+        self.prefix_entry.connect('activate', self.entry_activate)
+        allow_tabs_in_entry(self.prefix_entry)
+
+        vbox.pack_start(self.prefix_entry, False, False)
+
+        vbox.show_all()
+
+        page = gtk.Label('')
+        self.notebook.append_page(page, vbox)
 
     def productive_rewrite(self, buffer, start, end):
         buffer.begin_user_action()

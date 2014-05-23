@@ -47,6 +47,7 @@ Features
 *   Standard yaedit features
     
     *   Continual sync of file under edit to and from disk
+    *   Awesome Ctrl+P multi-line-prefix editing
     *   No dialog boxes, etc; see [yaedit][] page for more
     
 *   Rewrite-based editing
