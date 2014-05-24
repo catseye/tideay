@@ -515,7 +515,7 @@ class Editor(object):
 
 
 class Tideay(object):
-    def __init__(self, filenames):
+    def __init__(self):
         
         cwd = os.path.realpath(os.getcwd())
         self.lock_socket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
@@ -591,22 +591,12 @@ class Tideay(object):
         self.window.show_all()
         self.find_hbox.hide()
 
-        # -- open files... -- #
-        for filename in filenames:
-            self.open_editor(filename)
-
-        if not filenames:
-            open_entry.grab_focus()
-        else:
-            self.notebook.set_current_page(0)
-            self.notebook.get_nth_page(0).child.grab_focus()
-            self.set_window_title(0)
+        self.open_entry.grab_focus()
 
         def timeout():
             for editor in self.editors.values():
                 editor.sync_from_disk()
             return True
-
         gobject.timeout_add(1000, timeout)
 
         self.refresh()
@@ -1051,9 +1041,17 @@ class Tideay(object):
             gobject.idle_add(do_todo)
         self.todo.append(callback)
 
+    def select_editor(self, n):
+        self.notebook.set_current_page(n)
+        self.notebook.get_nth_page(n).child.grab_focus()
+        self.set_window_title(n)
+
 
 if __name__ == '__main__':
-    tideay = Tideay(sys.argv[1:])
+    tideay = Tideay()
+    for filename in sys.argv[1:]:
+        tideay.open_editor(filename)
+    tideay.select_editor(0)
     tideay.window.connect('destroy', gtk.main_quit)
 
     gtk.main()
