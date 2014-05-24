@@ -17,6 +17,7 @@
 #    along with this program; if not, write to the Free Software
 #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
+
 """ tideay - an editor to keep your dev env neat and tideay
 
     forked from: yaedit - yet another editor
@@ -357,6 +358,31 @@ class Editor(object):
         self.view.set_auto_indent(True)
         self.view.modify_font(pango.FontDescription('Ubuntu Mono 12'))
 
+        def on_key_press_event(widget, event):
+            end = self.buffer.get_iter_at_offset(
+                self.buffer.get_property('cursor-position')
+            )
+            start = self.buffer.get_iter_at_line(end.get_line())
+            if event.keyval == KEYVAL_TAB:
+                self.productive_rewrite(start, end)
+                return True
+            elif event.keyval == KEYVAL_RETURN:
+                if event.state & gtk.gdk.CONTROL_MASK:
+                    self.execute_command(start, end)
+                    return True
+                else:
+                    self.possibly_indent_new_block(start, end)
+                    return False
+            elif (event.keyval == KEYVAL_BACKSPACE and
+                  event.state & gtk.gdk.SHIFT_MASK):
+                self.destructive_rewrite(start, end)
+                return True
+            else:
+                keyname = gtk.gdk.keyval_name(event.keyval)
+                #print "Key %s (%d) was pressed" % (keyname, event.keyval)
+
+        self.view.connect('key_press_event', on_key_press_event)
+
         language = None
         mimetype = mimetypes.guess_type(filename)[0]
         if mimetype:
@@ -426,6 +452,67 @@ class Editor(object):
         self.file_text = text
         self.buffer.set_modified(False)
 
+    def productive_rewrite(self, start, end):
+        self.buffer.begin_user_action()
+        text = self.buffer.get_text(start, end, True)
+        text = rewrite_text(text, PRODUCTIVE_REWRITE_MAP)
+        self.buffer.delete(start, end)
+        self.buffer.insert(start, text, len(text))
+        self.buffer.end_user_action()
+
+    def destructive_rewrite(self, start, end):
+        self.buffer.begin_user_action()
+        text = self.buffer.get_text(start, end, True)
+        text = rewrite_text(text, DESTRUCTIVE_REWRITE_MAP)
+        self.buffer.delete(start, end)
+        self.buffer.insert(start, text, len(text))
+        self.buffer.end_user_action()
+
+    def possibly_indent_new_block(self, start, end):
+        text = self.buffer.get_text(start, end, True)
+        if (text.endswith((':', '{', '(', '[')) or
+            text.startswith(('*   ', '-   '))):
+            # Allow the keystroke, but queue an insert of four spaces
+            def insert_four_spaces(widget):
+                widget.insert_at_cursor(u'    ', 4)
+            gtk.idle_add(insert_four_spaces, self.buffer)
+
+    def execute_command(self, start, end):
+        self.buffer.begin_user_action()
+        command = self.buffer.get_text(start, end, True)
+        if command.startswith('%'):
+            command = command[1:]
+            command = command.strip()
+            pipe = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
+            output = pipe.communicate()[0]
+            output = '\n' + output
+            self.buffer.insert(end, output, len(output))
+            def insert_prompt(widget):
+                widget.insert_at_cursor(u'% ', 2)
+            gtk.idle_add(insert_prompt, self.buffer)
+        elif command.startswith('|'):
+            command = command[1:]
+            command = '%s < %s' % (
+                command, self.filename
+            )
+            self.buffer.delete(start, end)
+            self.save_to_disk()
+            pipe = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
+            output = pipe.communicate()[0]
+            self.buffer.set_text(output)
+        elif command.startswith('cd '):
+            dirname = command[3:]
+            if os.path.isdir(dirname):
+                os.chdir(dirname)
+                #self.set_window_title(-1, self)
+            self.buffer.set_text('')
+        else:
+            pipe = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
+            output = pipe.communicate()[0]
+            self.buffer.delete(start, end)
+            self.buffer.insert(start, output, len(output))
+        self.buffer.end_user_action()
+
 
 class Tideay(object):
     def __init__(self, filenames):
@@ -491,39 +578,6 @@ class Tideay(object):
         self.notebook.connect('switch-page', on_switch)
 
         self.window.add(self.notebook)
-
-        # -- misc -- #
-        def on_key_press_event(widget, event):
-            if not isinstance(self.window.get_focus(), gtksourceview2.View):
-                return
-            sourceview = self.active_sourceview()
-            if not sourceview:
-                # this seems unlikely to ever actually happen
-                return False
-            buffer = sourceview.get_buffer()
-            end = buffer.get_iter_at_offset(
-                buffer.get_property('cursor-position')
-            )
-            start = buffer.get_iter_at_line(end.get_line())
-            if event.keyval == KEYVAL_TAB:
-                self.productive_rewrite(buffer, start, end)
-                return True
-            elif event.keyval == KEYVAL_RETURN:
-                if event.state & gtk.gdk.CONTROL_MASK:
-                    self.execute_command(sourceview, buffer, start, end)
-                    return True
-                else:
-                    self.possibly_indent_new_block(buffer, start, end)
-                    return False
-            elif (event.keyval == KEYVAL_BACKSPACE and
-                  event.state & gtk.gdk.SHIFT_MASK):
-                self.destructive_rewrite(buffer, start, end)
-                return True
-            else:
-                keyname = gtk.gdk.keyval_name(event.keyval)
-                #print "Key %s (%d) was pressed" % (keyname, event.keyval)
-   
-        self.window.connect('key_press_event', on_key_press_event)
 
         def close_editor():
             page = self.notebook.get_nth_page(self.notebook.get_current_page())
@@ -682,68 +736,6 @@ class Tideay(object):
             self.accel_group.connect_group(ord(str(i)), gtk.gdk.MOD1_MASK, 0,
                 make_tab_focuser(i))
 
-    def productive_rewrite(self, buffer, start, end):
-        buffer.begin_user_action()
-        text = buffer.get_text(start, end, True)
-        text = rewrite_text(text, PRODUCTIVE_REWRITE_MAP)
-        buffer.delete(start, end)
-        buffer.insert(start, text, len(text))
-        buffer.end_user_action()
-
-    def destructive_rewrite(self, buffer, start, end):
-        buffer.begin_user_action()
-        text = buffer.get_text(start, end, True)
-        text = rewrite_text(text, DESTRUCTIVE_REWRITE_MAP)
-        buffer.delete(start, end)
-        buffer.insert(start, text, len(text))
-        buffer.end_user_action()
-
-    def possibly_indent_new_block(self, buffer, start, end):
-        text = buffer.get_text(start, end, True)
-        if (text.endswith((':', '{', '(', '[')) or
-            text.startswith(('*   ', '-   '))):
-            # Allow the keystroke, but queue an insert of four spaces
-            def insert_four_spaces(widget):
-                widget.insert_at_cursor(u'    ', 4)
-            gtk.idle_add(insert_four_spaces, buffer)
-
-    def execute_command(self, sourceview, buffer, start, end):
-        editor = self.get_editor_from_sourceview(sourceview)
-        buffer.begin_user_action()
-        command = buffer.get_text(start, end, True)
-        if command.startswith('%'):
-            command = command[1:]
-            command = command.strip()
-            pipe = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
-            output = pipe.communicate()[0]
-            output = '\n' + output
-            buffer.insert(end, output, len(output))
-            def insert_prompt(widget):
-                widget.insert_at_cursor(u'% ', 2)
-            gtk.idle_add(insert_prompt, buffer)
-        elif command.startswith('|'):
-            command = command[1:]
-            command = '%s < %s' % (
-                command, editor.filename
-            )
-            buffer.delete(start, end)
-            editor.save_to_disk()
-            pipe = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
-            output = pipe.communicate()[0]
-            buffer.set_text(output)
-        elif command.startswith('cd '):
-            dirname = command[3:]
-            if os.path.isdir(dirname):
-                os.chdir(dirname)
-                self.set_window_title(-1, editor)
-            buffer.set_text('')
-        else:
-            pipe = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
-            output = pipe.communicate()[0]
-            buffer.delete(start, end)
-            buffer.insert(start, output, len(output))
-        buffer.end_user_action()
-
     def set_window_title(self, page_number, editor=None):
         if editor is None:
             scrolly = self.notebook.get_nth_page(page_number)
@@ -754,12 +746,6 @@ class Tideay(object):
             )
         else:
             self.window.set_title('tideay')
-
-    def get_editor_from_sourceview(self, sourceview):
-        for key in self.editors:
-            if key.child is sourceview:
-                return self.editors[key]
-        return None
 
     def prefix_edited(self, *ignore):
         if self.busy:
