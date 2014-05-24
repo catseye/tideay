@@ -74,9 +74,9 @@ import gobject
 import gtk
 import pango
 
-CLOSE_TIMEOUT = 400
+### constants ###
 
-mimetypes.init()
+CLOSE_TIMEOUT = 400
 
 if SV2:
     MANAGER = gtksourceview2.language_manager_get_default()
@@ -88,6 +88,124 @@ KEYVAL_SHIFT_TAB = 65056
 KEYVAL_RETURN = 65293
 KEYVAL_BACKSPACE = 65288
 
+# not a dict, because order matters, and we iterate it anyway.
+# some symbols are supported from HTML entity names, minus the ;
+# (LaTeX might also be supported in the future, but redundancy is OK here)
+# TODO maybe just find a Python module that already does HTMLentities
+PRODUCTIVE_REWRITE_MAP = (
+    # four or more characters
+    (u'    ', u'        '),
+    (u'&cap', u'∩'),
+    (u'&cup', u'∪'),
+    (u'&sub', u'⊂'),
+    (u'&sup', u'⊃'),
+    (u'&isin', u'∈'),
+    (u'&notin', u'∉'),
+    # greek alphabet (three or more characters)
+    (u'&alpha', u'α'),
+    (u'&beta', u'β'),
+    (u'&gamma', u'γ'),
+    (u'&delta', u'δ'),
+    (u'&epsilon', u'ε'),
+    (u'&zeta', u'ζ'),
+    (u'&theta', u'θ'),
+    (u'&iota', u'ι'),
+    (u'&kappa', u'κ'),
+    (u'&lambda', u'λ'),
+    (u'&mu', u'μ'),
+    (u'&nu', u'ν'),
+    (u'&xi', u'ξ'),
+    (u'&omicron', u'ο'),
+    (u'&pi', u'π'),
+    (u'&rho', u'ρ'),
+    (u'&sigma', u'σ'),
+    (u'&tau', u'τ'),
+    (u'&upsilon', u'υ'),
+    (u'&phi', u'φ'),
+    (u'&chi', u'χ'),
+    (u'&psi', u'ψ'),
+    (u'&omega', u'ω'),
+    # three characters
+    (u'(c)', u'©'),
+    (u'GBP', u'£'),
+    (u'EUR', u'€'),
+    (u".'.", u'∴'),
+    (u'<->', u'↔'),
+    (u"```", u'‴'),
+    # two characters
+    (u"''", u'ˮ'),   # this is a dbl-apo U+02EE.
+    (u"``", u'″'),
+    (u'--', u'—'),
+    (u'->', u'→'),
+    (u'<-', u'←'),
+    (u'|^', u'↑'),
+    (u'|v', u'↓'),
+    (u'<<', u'«'),
+    (u'>>', u'»'),
+    (u'[[', u'⟦'),
+    (u']]', u'⟧'),
+    (u'<.', u'⟨'),
+    (u'.>', u'⟩'),
+    (u'[^', u'「'),
+    (u'^]', u'」'),
+    (u'<=', u'≤'),
+    (u'⊂=', u'⊆'),
+    (u'>=', u'≥'),
+    (u'⊃=', u'⊇'),
+    (u'/=', u'≠'),
+    (u'c/', u'¢'),
+    (u'<3', u'♡'),
+    (u'&&', u'⌘'),
+    (u'*5', u'☆'),
+    (u'<>', u'♢'),
+    (u'{}', u'∅'),
+    (u'[]', u'□'),
+    (u'./', u'÷'),
+    (u'.*', u'×'),
+    (u'.^', u'·'),
+    (u'^I', u'\t'),
+    (u'a`', u'à'),
+    (u"a'", u'á'),
+    (u'a:', u'ä'),
+    (u'e`', u'è'),
+    (u"e'", u'é'),
+    (u'e:', u'ë'),
+    (u"i:", u'ï'),
+    (u"i'", u'í'),
+    (u'o:', u'ö'),
+    (u"o'", u'ó'),
+    (u'u:', u'ü'),
+    (u'U:', u'Ü'),
+    (u"u'", u'ú'),
+    (u'ae', u'æ'),
+    (u'AE', u'Æ'),
+    # one character.  note the swapping.
+    (u'♡', u'♥'),
+    (u'♥', u'♡'),
+    (u'☆', u'★'),
+    (u'★', u'☆'),
+    (u'♢', u'♦'),
+    (u'♦', u'♢'),
+    (u'·', u'•'),
+    (u'•', u'·'),
+    (u'□', u'■'),
+    (u'■', u'□'),
+    (u'σ', u'ς'),
+    (u'ς', u'σ'),
+    (u"`", u'′'),
+    (u'\t', u'\t\t'),
+)
+
+DESTRUCTIVE_REWRITE_MAP = (
+    # four characters
+    (u'    ', u''),
+)
+
+
+mimetypes.init()
+
+
+### functions ###
 
 def get_language_from_mime_type(mime):
     if not SV2:
@@ -209,121 +327,6 @@ def get_prefix(lines):
     return prefix
 
 
-# not a dict, because order matters, and we iterate it anyway.
-# some symbols are supported from HTML entity names, minus the ;
-# (LaTeX might also be supported in the future, but redundancy is OK here)
-# TODO maybe just find a Python module that already does HTMLentities
-PRODUCTIVE_REWRITE_MAP = (
-    # four or more characters
-    (u'    ', u'        '),
-    (u'&cap', u'∩'),
-    (u'&cup', u'∪'),
-    (u'&sub', u'⊂'),
-    (u'&sup', u'⊃'),
-    (u'&isin', u'∈'),
-    (u'&notin', u'∉'),
-    # greek alphabet (three or more characters)
-    (u'&alpha', u'α'),
-    (u'&beta', u'β'),
-    (u'&gamma', u'γ'),
-    (u'&delta', u'δ'),
-    (u'&epsilon', u'ε'),
-    (u'&zeta', u'ζ'),
-    (u'&theta', u'θ'),
-    (u'&iota', u'ι'),
-    (u'&kappa', u'κ'),
-    (u'&lambda', u'λ'),
-    (u'&mu', u'μ'),
-    (u'&nu', u'ν'),
-    (u'&xi', u'ξ'),
-    (u'&omicron', u'ο'),
-    (u'&pi', u'π'),
-    (u'&rho', u'ρ'),
-    (u'&sigma', u'σ'),
-    (u'&tau', u'τ'),
-    (u'&upsilon', u'υ'),
-    (u'&phi', u'φ'),
-    (u'&chi', u'χ'),
-    (u'&psi', u'ψ'),
-    (u'&omega', u'ω'),
-    # three characters
-    (u'(c)', u'©'),
-    (u'GBP', u'£'),
-    (u'EUR', u'€'),
-    (u".'.", u'∴'),
-    (u'<->', u'↔'),
-    (u"```", u'‴'),
-    # two characters
-    (u"''", u'ˮ'),   # this is a dbl-apo U+02EE.
-    (u"``", u'″'),
-    (u'--', u'—'),
-    (u'->', u'→'),
-    (u'<-', u'←'),
-    (u'|^', u'↑'),
-    (u'|v', u'↓'),
-    (u'<<', u'«'),
-    (u'>>', u'»'),
-    (u'[[', u'⟦'),
-    (u']]', u'⟧'),
-    (u'<.', u'⟨'),
-    (u'.>', u'⟩'),
-    (u'[^', u'「'),
-    (u'^]', u'」'),
-    (u'<=', u'≤'),
-    (u'⊂=', u'⊆'),
-    (u'>=', u'≥'),
-    (u'⊃=', u'⊇'),
-    (u'/=', u'≠'),
-    (u'c/', u'¢'),
-    (u'<3', u'♡'),
-    (u'&&', u'⌘'),
-    (u'*5', u'☆'),
-    (u'<>', u'♢'),
-    (u'{}', u'∅'),
-    (u'[]', u'□'),
-    (u'./', u'÷'),
-    (u'.*', u'×'),
-    (u'.^', u'·'),
-    (u'^I', u'\t'),
-    (u'a`', u'à'),
-    (u"a'", u'á'),
-    (u'a:', u'ä'),
-    (u'e`', u'è'),
-    (u"e'", u'é'),
-    (u'e:', u'ë'),
-    (u"i:", u'ï'),
-    (u"i'", u'í'),
-    (u'o:', u'ö'),
-    (u"o'", u'ó'),
-    (u'u:', u'ü'),
-    (u'U:', u'Ü'),
-    (u"u'", u'ú'),
-    (u'ae', u'æ'),
-    (u'AE', u'Æ'),
-    # one character.  note the swapping.
-    (u'♡', u'♥'),
-    (u'♥', u'♡'),
-    (u'☆', u'★'),
-    (u'★', u'☆'),
-    (u'♢', u'♦'),
-    (u'♦', u'♢'),
-    (u'·', u'•'),
-    (u'•', u'·'),
-    (u'□', u'■'),
-    (u'■', u'□'),
-    (u'σ', u'ς'),
-    (u'ς', u'σ'),
-    (u"`", u'′'),
-    (u'\t', u'\t\t'),
-)
-
-
-DESTRUCTIVE_REWRITE_MAP = (
-    # four characters
-    (u'    ', u''),
-)
-
-
 def rewrite_text(text, map):
     if text == u'':
         return u'    '
@@ -333,6 +336,8 @@ def rewrite_text(text, map):
             return text[:-len(search)] + replace.encode('UTF-8')
     return text
 
+
+### classes ###
 
 class Editor(object):
     def __init__(self, filename):
@@ -491,12 +496,11 @@ class Tideay(object):
         def on_key_press_event(widget, event):
             if not isinstance(self.window.get_focus(), gtksourceview2.View):
                 return
-            # TODO
-            editor = self.active_sourceview()
-            if not editor:
+            sourceview = self.active_sourceview()
+            if not sourceview:
                 # this seems unlikely to ever actually happen
                 return False
-            buffer = editor.get_buffer()
+            buffer = sourceview.get_buffer()
             end = buffer.get_iter_at_offset(
                 buffer.get_property('cursor-position')
             )
@@ -506,7 +510,7 @@ class Tideay(object):
                 return True
             elif event.keyval == KEYVAL_RETURN:
                 if event.state & gtk.gdk.CONTROL_MASK:
-                    self.execute_command(editor, buffer, start, end)
+                    self.execute_command(sourceview, buffer, start, end)
                     return True
                 else:
                     self.possibly_indent_new_block(buffer, start, end)
@@ -528,19 +532,7 @@ class Tideay(object):
         self.accel_group.connect_group(ord('W'), gtk.gdk.CONTROL_MASK, 0,
             lambda *etc: close_editor())
 
-        # i never use this -- you have to count & i often have >10 tabs
-        def make_tab_focuser(x):
-            def focus_tab(*etc):
-                countdown = x
-                for i in xrange(self.notebook.get_n_pages()):
-                    if self.notebook.get_nth_page(i) in self.editors:
-                        countdown -= 1
-                        if countdown == 0:
-                            self.notebook.set_current_page(i)
-            return focus_tab
-        for i in range(1, 10):
-            self.accel_group.connect_group(ord(str(i)), gtk.gdk.MOD1_MASK, 0,
-                make_tab_focuser(i))
+        #self.make_tab_focusers()
 
         self.window.show_all()
         self.find_hbox.hide()
@@ -675,6 +667,21 @@ class Tideay(object):
         project_page = gtk.Entry()  # ?!?
         self.notebook.append_page(project_page, vbox)
 
+    def make_tab_focusers(self):
+        # i never use this -- you have to count & i often have >10 tabs
+        def make_tab_focuser(x):
+            def focus_tab(*etc):
+                countdown = x
+                for i in xrange(self.notebook.get_n_pages()):
+                    if self.notebook.get_nth_page(i) in self.editors:
+                        countdown -= 1
+                        if countdown == 0:
+                            self.notebook.set_current_page(i)
+            return focus_tab
+        for i in range(1, 10):
+            self.accel_group.connect_group(ord(str(i)), gtk.gdk.MOD1_MASK, 0,
+                make_tab_focuser(i))
+
     def productive_rewrite(self, buffer, start, end):
         buffer.begin_user_action()
         text = buffer.get_text(start, end, True)
@@ -759,11 +766,10 @@ class Tideay(object):
             return
         self.busy += 1
         try:
-            # TODO
-            editor = self.active_sourceview()
-            if not editor:
+            sourceview = self.active_sourceview()
+            if not sourceview:
                 return
-            buffer = editor.get_buffer()
+            buffer = sourceview.get_buffer()
 
             new_prefix = self.prefix_entry.get_text()
 
