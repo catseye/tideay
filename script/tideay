@@ -491,7 +491,8 @@ class Tideay(object):
         def on_key_press_event(widget, event):
             if not isinstance(self.window.get_focus(), gtksourceview2.View):
                 return
-            editor = self.active_editor()
+            # TODO
+            editor = self.active_sourceview()
             if not editor:
                 # this seems unlikely to ever actually happen
                 return False
@@ -758,7 +759,8 @@ class Tideay(object):
             return
         self.busy += 1
         try:
-            editor = self.active_editor()
+            # TODO
+            editor = self.active_sourceview()
             if not editor:
                 return
             buffer = editor.get_buffer()
@@ -807,10 +809,10 @@ class Tideay(object):
             return
         self.busy += 1
         try:
-            editor = self.active_editor()
-            if not editor:
+            sourceview = self.active_sourceview()
+            if not sourceview:
                 return
-            buffer = editor.get_buffer()
+            buffer = sourceview.get_buffer()
 
             try:
                 line = int(self.line_entry.get_text())
@@ -822,16 +824,16 @@ class Tideay(object):
             if not iter2.ends_line():
                 iter2.forward_to_line_end()
             buffer.select_range(iter1, iter2)
-            editor.scroll_to_mark(buffer.get_mark('insert'), 0.25)
+            sourceview.scroll_to_mark(buffer.get_mark('insert'), 0.25)
         finally:
             self.busy -= 1
         self.refresh()
 
     def go_find(self, forward):
-        editor = self.active_editor()
-        if not editor:
+        sourceview = self.active_sourceview()
+        if not sourceview:
             return
-        buffer = editor.get_buffer()
+        buffer = sourceview.get_buffer()
 
         if not self.search_matches:
             start, end = self.search_from, self.search_from
@@ -854,7 +856,7 @@ class Tideay(object):
             buffer.get_iter_at_offset(start),
             buffer.get_iter_at_offset(end)
         )
-        editor.scroll_to_mark(buffer.get_mark('insert'), 0.25)
+        sourceview.scroll_to_mark(buffer.get_mark('insert'), 0.25)
 
     def find_edited(self, *ignore):
         self.search_required = True
@@ -863,43 +865,43 @@ class Tideay(object):
         self.go_find(True)
 
     def find_next(self, *ignore):
-        editor = self.active_editor()
-        if not editor:
+        sourceview = self.active_sourceview()
+        if not sourceview:
             return
-        buffer = editor.get_buffer()
+        buffer = sourceview.get_buffer()
         insert = buffer.get_insert()
         self.search_from = buffer.get_iter_at_mark(insert).get_offset()
         self.go_find(True)
 
     def find_prev(self, *ignore):
-        editor = self.active_editor()
-        if not editor:
+        sourceview = self.active_sourceview()
+        if not sourceview:
             return
-        buffer = editor.get_buffer()
+        buffer = sourceview.get_buffer()
         insert = buffer.get_insert()
         self.search_from = buffer.get_iter_at_mark(insert).get_offset()
         self.go_find(False)
 
-    def unfocus(self, editor, *ignore):
-        buffer = editor.get_buffer()
+    def unfocus(self, sourceview, *ignore):
+        buffer = sourceview.get_buffer()
         insert = buffer.get_insert()
         self.search_from = buffer.get_iter_at_mark(insert).get_offset()
 
     def entry_activate(self, *etc):
-        editor = self.active_editor()
-        if not editor:
+        sourceview = self.active_sourceview()
+        if not sourceview:
             return
-        editor.grab_focus()
+        sourceview.grab_focus()
 
     def refresh(self, *ignore):
         if self.busy:
             return
         self.busy += 1
         try:
-            editor = self.active_editor()
-            if not editor:
+            sourceview = self.active_sourceview()
+            if not sourceview:
                 return
-            buffer = editor.get_buffer()
+            buffer = sourceview.get_buffer()
             insert = buffer.get_insert()
             self.line_entry.set_text(
                 str(buffer.get_iter_at_mark(insert).get_line() + 1)
@@ -928,7 +930,7 @@ class Tideay(object):
                 self.prefix_label.hide()
                 self.prefix_entry.hide()
 
-            if editor is not self.last_active:
+            if sourceview is not self.last_active:
                 self.search_required = True
 
             if self.search_required:
@@ -959,7 +961,7 @@ class Tideay(object):
                 else:
                     self.find_hbox.show()
 
-            self.last_active = editor
+            self.last_active = sourceview
         finally:
             self.busy -= 1
 
@@ -1037,10 +1039,9 @@ class Tideay(object):
         self.editors[scrolly] = editor
         self.set_window_title(page_number)
 
-    def active_editor(self):
-        """Note that this does not return an Editor object.
-        It returns a gtksourceview2.View object.
-        
+    def active_sourceview(self):
+        """Note that this returns a gtksourceview2.View object.
+
         """
         page = self.notebook.get_nth_page(self.notebook.get_current_page())
         if page not in self.editors:
