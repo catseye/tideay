@@ -7,12 +7,12 @@
 #    it under the terms of the GNU General Public License as published by
 #    the Free Software Foundation; either version 2 of the License, or
 #    (at your option) any later version.
-#
+#    
 #    This program is distributed in the hope that it will be useful,
 #    but WITHOUT ANY WARRANTY; without even the implied warranty of
 #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #    GNU General Public License for more details.
-#
+#    
 #    You should have received a copy of the GNU General Public License
 #    along with this program; if not, write to the Free Software
 #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -435,6 +435,42 @@ class Editor(object):
             self.buffer.insert(start, output, len(output))
         self.buffer.end_user_action()
 
+    def set_prefix(self, new_prefix):
+        buffer = self.buffer
+        selection = buffer.get_selection_bounds()
+        if not selection:
+            return
+        line1 = selection[0].get_line()
+        line2 = selection[1].get_line()
+        if selection[1].starts_line():
+            line2 -= 1
+        if line1 == line2:
+            return
+        iter1 = buffer.get_iter_at_line(line1)
+        iter2 = buffer.get_iter_at_line(line2)
+        if not iter2.ends_line():
+            iter2.forward_to_line_end()
+        text = buffer.get_text(iter1, iter2)
+        lines = text.split('\n')
+        prefix = get_prefix(lines)
+        
+        lines = text.split('\n')
+        for i in xrange(len(lines)):
+            lines[i] = new_prefix + lines[i][len(prefix):]
+        text = '\n'.join(lines)
+        
+        buffer.begin_user_action()
+        buffer.delete(iter1, iter2)
+        iter1 = buffer.get_iter_at_line(line1)
+        buffer.insert(iter1, text)
+        
+        iter1 = buffer.get_iter_at_line(line1)
+        iter2 = buffer.get_iter_at_line(line2)
+        iter2.forward_to_line_end()
+        buffer.select_range(iter1, iter2)
+        
+        buffer.end_user_action()
+
 
 class Tideay(object):
     def __init__(self):
@@ -736,51 +772,17 @@ class Tideay(object):
         else:
             self.window.set_title('tideay')
 
+    # ...editing command drivers...
+
     def prefix_edited(self, *ignore):
         if self.busy:
             return
         self.busy += 1
         try:
-            sourceview = self.active_sourceview()
-            if not sourceview:
-                return
-            buffer = sourceview.get_buffer()
-
-            new_prefix = self.prefix_entry.get_text()
-
-            selection = buffer.get_selection_bounds()
-            if not selection:
-                return
-            line1 = selection[0].get_line()
-            line2 = selection[1].get_line()
-            if selection[1].starts_line():
-                line2 -= 1
-            if line1 == line2:
-                return
-            iter1 = buffer.get_iter_at_line(line1)
-            iter2 = buffer.get_iter_at_line(line2)
-            if not iter2.ends_line():
-                iter2.forward_to_line_end()
-            text = buffer.get_text(iter1, iter2)
-            lines = text.split('\n')
-            prefix = get_prefix(lines)
-
-            lines = text.split('\n')
-            for i in xrange(len(lines)):
-                lines[i] = new_prefix + lines[i][len(prefix):]
-            text = '\n'.join(lines)
-
-            buffer.begin_user_action()
-            buffer.delete(iter1, iter2)
-            iter1 = buffer.get_iter_at_line(line1)
-            buffer.insert(iter1, text)
-
-            iter1 = buffer.get_iter_at_line(line1)
-            iter2 = buffer.get_iter_at_line(line2)
-            iter2.forward_to_line_end()
-            buffer.select_range(iter1, iter2)
-
-            buffer.end_user_action()
+            editor = self.active_editor()
+            if editor:
+                new_prefix = self.prefix_entry.get_text()
+                editor.set_prefix(new_prefix)
         finally:
             self.busy -= 1
         self.refresh()
@@ -1024,10 +1026,16 @@ class Tideay(object):
         """Note that this returns a gtksourceview2.View object.
 
         """
+        editor = self.active_editor()
+        if editor is None:
+            return None
+        return editor.view
+
+    def active_editor(self):
         page = self.notebook.get_nth_page(self.notebook.get_current_page())
         if page not in self.editors:
             return None
-        return page.child
+        return self.editors[page]
 
     def add_todo(self, callback):
         if callback in self.todo:
