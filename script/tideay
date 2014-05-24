@@ -442,26 +442,16 @@ class Tideay(object):
         self.notebook.set_scrollable(True)
 
         self.create_open_widget()
-        vbox = self.create_line_find_prefix_widget()
-
-        # for showing the current file when the line find prefix widget is
-        # focused. or rather, not focusing it.  honestly, this is a bit hacky.
-        page = gtk.Label('')
-        self.notebook.append_page(page, vbox)
-
+        self.create_line_find_prefix_widget()
         #self.create_project_widget()
 
         def on_switch(widget, _, page_number):
-            self.set_window_title(page_number)
-            if page_number > 0 and page_number == self.notebook.page_num(page):
+            if page_number == self.notebook.page_num(self.empty_page):
                 self.notebook.emit_stop_by_name('switch-page')
-        self.notebook.connect('switch-page', on_switch)
+                return
+            self.set_window_title(page_number)
 
-        #TODO:
-        #toolbox = gtk.Label('')
-        #label = gtk.Label('tools')
-        #label.set_alignment(0.0,0.0)
-        #self.notebook.append_page(toolbox, label)
+        self.notebook.connect('switch-page', on_switch)
 
         self.window = gtk.Window()
         # default dimensions are 820x745 with a little padding.
@@ -525,7 +515,7 @@ class Tideay(object):
             lambda *etc: self.find_entry.grab_focus())
 
         self.accel_group.connect_group(ord('O'), gtk.gdk.CONTROL_MASK, 0,
-            lambda *etc: open_entry.grab_focus())
+            lambda *etc: self.open_entry.grab_focus())
 
         def close_editor():
             page = self.notebook.get_nth_page(self.notebook.get_current_page())
@@ -597,15 +587,18 @@ class Tideay(object):
         label.show()
         vbox.pack_start(label, False, False)
 
-        open_entry, scroller = make_file_completion(self.open_editor)
-        vbox.pack_start(open_entry, True, True)
-        self.notebook.append_page(scroller, vbox)
+        self.open_entry, self.open_scroller = \
+            make_file_completion(self.open_editor)
+        vbox.pack_start(self.open_entry, True, True)
 
         def focusin(*etc):
-            self.notebook.set_current_page(self.notebook.page_num(scroller))
-            open_entry.grab_focus()
+            self.notebook.set_current_page(
+                self.notebook.page_num(self.open_scroller)
+            )
+            self.open_entry.grab_focus()
+        self.open_entry.connect('focus-in-event', focusin)
 
-        open_entry.connect('focus-in-event', focusin)
+        self.notebook.append_page(self.open_scroller, vbox)
 
     def create_line_find_prefix_widget(self):
         vbox = gtk.VBox(False, 5)
@@ -654,17 +647,21 @@ class Tideay(object):
         vbox.pack_start(self.prefix_entry, False, False)
 
         vbox.show_all()
-        return vbox
+        
+        # for showing the current file when the line find prefix widget is
+        # focused. or rather, not focusing it.  honestly, this is a bit hacky.
+        self.empty_page = gtk.Label('')
+        self.notebook.append_page(self.empty_page, vbox)
 
     def create_project_widget(self):
         vbox = gtk.VBox(False, 5)
         label = gtk.Label('project')
         label.set_alignment(0.0, 0.0)
-        label.show()
         vbox.pack_start(label, False, False)
 
         project_entry = gtk.Entry()
         vbox.pack_start(project_entry, True, True)
+        vbox.show_all()
         project_page = gtk.Entry()  # ?!?
         self.notebook.append_page(project_page, vbox)
 
@@ -1058,3 +1055,4 @@ if __name__ == '__main__':
     tideay.window.connect('destroy', gtk.main_quit)
 
     gtk.main()
+            
