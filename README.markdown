@@ -114,7 +114,9 @@ Other changes/improvements over yaedit
 --------------------------------------
 
 *   Editor pane uses a smaller font.  Window is initially sized to show 80
-    columns (on my equipment; with different fonts or whatnot, YMMV.)
+    columns (on my equipment; with different fonts or whatnot, YMMV.  Window
+    size can be specified with the `TIDEAY_WIDTH` and `TIDEAY_HEIGHT`
+    environment variables.)
 *   Notebook's tab pane (on the left) has a fixed width.  Long filenames will
     not expand it and ruin the 80-column width of the editor pane.
 *   Height of each label in the tab pane is smaller.
@@ -194,19 +196,18 @@ Wishlist
 *   When opening a new file, cursor position is at bottom of file, but
     view is scrolled to top of file.  Maybe move cursor to top, too.
 
-### internals ###
-
-*   Some methods on `Tideay` are just too long.
-*   Some methods on `Tideay` should be methods on `Editor`.
-*   Often a variable called `editor` actually contains a `ScrollView` object.
-
 ### other wild ideas ###
 
+*   One-letter commands could be dealt with specially, so `|r foo bar`
+    replaces text.  Or something.
+*   Workspace files, that contain a list of files, and open them all when
+    the workspace file is opened.  It could also contain rewrite rules.
+    And be a good place for jotting miscellaneous notes and running
+    miscellaneous commands without wrecking a buffer.
+*   Read-only buffers that watch a command.  (`git diff`, in particular.)
 *   When trying to start tideay when tideay is already running — send the
     running instance a message telling it to open the files that we were
     asked to open.
-*   Or — maybe only one instance per working directory (assumed to be a repo
-    clone directory)?
 *   Plugins.  These should just be Python files, in a subdirectory of your
     home directory (maybe?) which are sourced upon startup.  tideay could
     ship with some, but you'd have to install them yourself.  The rewriting

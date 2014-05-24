@@ -238,84 +238,6 @@ def allow_tabs_in_entry(entry):
     entry.connect('key-press-event', key_event)
 
 
-def make_file_completion(callback):
-    entry = gtk.Entry()
-    entry.show()
-
-    liststore = gtk.ListStore(gobject.TYPE_STRING)
-    tree = gtk.TreeView(liststore)
-    renderer = gtk.CellRendererText()
-    column = gtk.TreeViewColumn(None, renderer, text=0)
-    tree.append_column(column)
-    tree.set_headers_visible(False)
-
-    scroller = gtk.ScrolledWindow()
-    scroller.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-    scroller.add(tree)
-    scroller.show_all()
-
-    def key_event_entry(widget, event):
-        if event.keyval == KEYVAL_TAB:
-            tree.grab_focus()
-            return True
-    entry.connect('key-press-event', key_event_entry)
-
-    def key_event_tree(widget, event):
-        if event.keyval in (KEYVAL_TAB, KEYVAL_SHIFT_TAB):
-            selection = tree.get_selection().get_selected()[1]
-            if selection:
-                entry.set_text(liststore.get_value(selection, 0))
-            entry.grab_focus()
-            return True
-    tree.connect('key-press-event', key_event_tree)
-
-    def refresh_event(widget, *etc):
-        freshen_list()
-
-    entry.connect('changed', refresh_event)
-    entry.connect('focus-in-event', refresh_event)
-
-    def select(filename):
-        if os.path.isdir(filename):
-            entry.grab_focus()
-            entry.set_text(filename)
-            entry.select_region(0, -1)
-        else:
-            entry.set_text('')
-            callback(filename)
-
-    def freshen_list():
-        liststore.clear()
-        text = entry.get_text()
-        if text.startswith('~') and 'HOME' in os.environ:
-            text = os.environ.get('HOME') + text[1:]
-        files = glob.glob(text + '*')
-        files.sort()
-        for filename in files:
-            if filename.endswith('~'):
-                continue
-            if os.path.split(filename)[1].startswith('.'):
-                continue
-            if os.path.isdir(filename):
-                filename += os.path.sep
-            liststore.append([filename])
-
-    def entry_activate(*etc):
-        select(entry.get_text())
-    entry.connect('activate', entry_activate)
-
-    def move(widget, kind, amount):
-        if amount < 0 and tree.get_cursor()[0] == (0,):
-            entry.grab_focus()
-    tree.connect('move-cursor', move)
-
-    def select_row(widget, path, *etc):
-        select(liststore.get_value(liststore.get_iter(path), 0))
-    tree.connect('row-activated', select_row)
-
-    return entry, scroller
-
-
 def get_prefix(lines):
     prefix = lines[0]
     for line in lines[1:]:
@@ -609,7 +531,7 @@ class Tideay(object):
         vbox.pack_start(label, False, False)
 
         self.open_entry, self.open_scroller = \
-            make_file_completion(self.open_editor)
+            self.make_file_completion(self.open_editor)
         vbox.pack_start(self.open_entry, True, True)
 
         def focusin(*etc):
@@ -725,6 +647,83 @@ class Tideay(object):
         for i in range(1, 10):
             self.accel_group.connect_group(ord(str(i)), gtk.gdk.MOD1_MASK, 0,
                 make_tab_focuser(i))
+
+    def make_file_completion(self, callback):
+        entry = gtk.Entry()
+        entry.show()
+    
+        liststore = gtk.ListStore(gobject.TYPE_STRING)
+        tree = gtk.TreeView(liststore)
+        renderer = gtk.CellRendererText()
+        column = gtk.TreeViewColumn(None, renderer, text=0)
+        tree.append_column(column)
+        tree.set_headers_visible(False)
+    
+        scroller = gtk.ScrolledWindow()
+        scroller.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+        scroller.add(tree)
+        scroller.show_all()
+    
+        def key_event_entry(widget, event):
+            if event.keyval == KEYVAL_TAB:
+                tree.grab_focus()
+                return True
+        entry.connect('key-press-event', key_event_entry)
+    
+        def key_event_tree(widget, event):
+            if event.keyval in (KEYVAL_TAB, KEYVAL_SHIFT_TAB):
+                selection = tree.get_selection().get_selected()[1]
+                if selection:
+                    entry.set_text(liststore.get_value(selection, 0))
+                entry.grab_focus()
+                return True
+        tree.connect('key-press-event', key_event_tree)
+    
+        def refresh_event(widget, *etc):
+            freshen_list()
+    
+        entry.connect('changed', refresh_event)
+        entry.connect('focus-in-event', refresh_event)
+    
+        def select(filename):
+            if os.path.isdir(filename):
+                entry.grab_focus()
+                entry.set_text(filename)
+                entry.select_region(0, -1)
+            else:
+                entry.set_text('')
+                callback(filename)
+    
+        def freshen_list():
+            liststore.clear()
+            text = entry.get_text()
+            if text.startswith('~') and 'HOME' in os.environ:
+                text = os.environ.get('HOME') + text[1:]
+            files = glob.glob(text + '*')
+            files.sort()
+            for filename in files:
+                if filename.endswith('~'):
+                    continue
+                if os.path.split(filename)[1].startswith('.'):
+                    continue
+                if os.path.isdir(filename):
+                    filename += os.path.sep
+                liststore.append([filename])
+    
+        def entry_activate(*etc):
+            select(entry.get_text())
+        entry.connect('activate', entry_activate)
+    
+        def move(widget, kind, amount):
+            if amount < 0 and tree.get_cursor()[0] == (0,):
+                entry.grab_focus()
+        tree.connect('move-cursor', move)
+    
+        def select_row(widget, path, *etc):
+            select(liststore.get_value(liststore.get_iter(path), 0))
+        tree.connect('row-activated', select_row)
+    
+        return entry, scroller
 
     def set_window_title(self, page_number, editor=None):
         if editor is None:
