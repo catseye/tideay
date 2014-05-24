@@ -432,15 +432,47 @@ class Tideay(object):
         except socket.error:
             raise EnvironmentError('tideay is already running in directory %s' % cwd)
 
+        # instance variables (there are others; they are all gtk controls)
+        self.busy = 0
+        self.last_active = None
+        self.search_required = False
+        self.search_matches = []
+        self.search_from = 0
         # keys are gtk ScrollViews (what's added to the notebook)
         # values are Editor objects (defined in this source)
         self.editors = weakref.WeakKeyDictionary()
         self.todo = []
 
+        # default dimensions are 820x745 with a little padding.
+        # width is contrived to make the text area 80 columns wide.
+        window_width = 825
+        if 'TIDEAY_WIDTH' in os.environ:
+            window_width = int(os.environ['TIDEAY_WIDTH'])
+        window_height = 740
+        if 'TIDEAY_HEIGHT' in os.environ:
+            window_height = int(os.environ['TIDEAY_HEIGHT'])
+
+        # -- Window -- #
+        self.window = gtk.Window()
+        self.window.resize(window_width, window_height)
+
+        self.accel_group = gtk.AccelGroup()
+        self.window.add_accel_group(self.accel_group)
+
+        def delete_event(*etc):
+            self.window.hide()
+            gobject.timeout_add(CLOSE_TIMEOUT, lambda: self.window.destroy())
+            return True
+        self.window.connect('delete-event', delete_event)
+        self.accel_group.connect_group(ord('Q'), gtk.gdk.CONTROL_MASK, 0,
+            lambda *etc: self.window.destroy())
+
+        # -- Notebook -- #
         self.notebook = gtk.Notebook()
         self.notebook.set_tab_pos(gtk.POS_LEFT)
         self.notebook.set_scrollable(True)
 
+        # -- Widgets -- #
         self.create_open_widget()
         self.create_line_find_prefix_widget()
         #self.create_project_widget()
@@ -453,69 +485,40 @@ class Tideay(object):
 
         self.notebook.connect('switch-page', on_switch)
 
-        self.window = gtk.Window()
-        # default dimensions are 820x745 with a little padding.
-        # width is contrived to make the text area 80 columns wide.
-        window_width = 825
-        if 'TIDEAY_WIDTH' in os.environ:
-            window_width = int(os.environ['TIDEAY_WIDTH'])
-        window_height = 740
-        if 'TIDEAY_HEIGHT' in os.environ:
-            window_height = int(os.environ['TIDEAY_HEIGHT'])
-        self.window.resize(window_width, window_height)
         self.window.add(self.notebook)
 
-        def delete_event(*etc):
-            self.window.hide()
-            gobject.timeout_add(CLOSE_TIMEOUT, lambda: self.window.destroy())
-            return True
-        self.window.connect('delete-event', delete_event)
-
+        # -- misc -- #
         def on_key_press_event(widget, event):
-            if isinstance(self.window.get_focus(), gtksourceview2.View):
-                editor = self.active_editor()
-                if not editor:
-                    # this seems unlikely to ever actually happen
-                    return False
-                buffer = editor.get_buffer()
-                end = buffer.get_iter_at_offset(
-                    buffer.get_property('cursor-position')
-                )
-                start = buffer.get_iter_at_line(end.get_line())
-                if event.keyval == KEYVAL_TAB:
-                    self.productive_rewrite(buffer, start, end)
-                    return True
-                elif event.keyval == KEYVAL_RETURN:
-                    if event.state & gtk.gdk.CONTROL_MASK:
-                        self.execute_command(editor, buffer, start, end)
-                        return True
-                    else:
-                        self.possibly_indent_new_block(buffer, start, end)
-                        return False
-                elif (event.keyval == KEYVAL_BACKSPACE and
-                      event.state & gtk.gdk.SHIFT_MASK):
-                    self.destructive_rewrite(buffer, start, end)
+            if not isinstance(self.window.get_focus(), gtksourceview2.View):
+                return
+            editor = self.active_editor()
+            if not editor:
+                # this seems unlikely to ever actually happen
+                return False
+            buffer = editor.get_buffer()
+            end = buffer.get_iter_at_offset(
+                buffer.get_property('cursor-position')
+            )
+            start = buffer.get_iter_at_line(end.get_line())
+            if event.keyval == KEYVAL_TAB:
+                self.productive_rewrite(buffer, start, end)
+                return True
+            elif event.keyval == KEYVAL_RETURN:
+                if event.state & gtk.gdk.CONTROL_MASK:
+                    self.execute_command(editor, buffer, start, end)
                     return True
                 else:
-                    keyname = gtk.gdk.keyval_name(event.keyval)
-                    #print "Key %s (%d) was pressed" % (keyname, event.keyval)
+                    self.possibly_indent_new_block(buffer, start, end)
+                    return False
+            elif (event.keyval == KEYVAL_BACKSPACE and
+                  event.state & gtk.gdk.SHIFT_MASK):
+                self.destructive_rewrite(buffer, start, end)
+                return True
+            else:
+                keyname = gtk.gdk.keyval_name(event.keyval)
+                #print "Key %s (%d) was pressed" % (keyname, event.keyval)
    
         self.window.connect('key_press_event', on_key_press_event)
-
-        self.accel_group = gtk.AccelGroup()
-        self.window.add_accel_group(self.accel_group)
-
-        self.accel_group.connect_group(ord('Q'), gtk.gdk.CONTROL_MASK, 0,
-            lambda *etc: self.window.destroy())
-
-        self.accel_group.connect_group(ord('I'), gtk.gdk.CONTROL_MASK, 0,
-            lambda *etc: self.line_entry.grab_focus())
-
-        self.accel_group.connect_group(ord('F'), gtk.gdk.CONTROL_MASK, 0,
-            lambda *etc: self.find_entry.grab_focus())
-
-        self.accel_group.connect_group(ord('O'), gtk.gdk.CONTROL_MASK, 0,
-            lambda *etc: self.open_entry.grab_focus())
 
         def close_editor():
             page = self.notebook.get_nth_page(self.notebook.get_current_page())
@@ -524,6 +527,7 @@ class Tideay(object):
         self.accel_group.connect_group(ord('W'), gtk.gdk.CONTROL_MASK, 0,
             lambda *etc: close_editor())
 
+        # i never use this -- you have to count & i often have >10 tabs
         def make_tab_focuser(x):
             def focus_tab(*etc):
                 countdown = x
@@ -537,30 +541,10 @@ class Tideay(object):
             self.accel_group.connect_group(ord(str(i)), gtk.gdk.MOD1_MASK, 0,
                 make_tab_focuser(i))
 
-        def prefix_focuser(*etc):
-            settings = self.prefix_entry.get_settings()
-            old = settings.get_property('gtk-entry-select-on-focus')
-            settings.set_property('gtk-entry-select-on-focus', False)
-            self.prefix_entry.grab_focus()
-            pos = 0
-            for char in self.prefix_entry.get_text():
-                if char not in ' \t':
-                    break
-                pos += 1
-            self.prefix_entry.set_position(pos)
-            settings.set_property('gtk-entry-select-on-focus', old)
-        self.accel_group.connect_group(ord('P'), gtk.gdk.CONTROL_MASK, 0,
-            prefix_focuser)
-
         self.window.show_all()
         self.find_hbox.hide()
 
-        self.busy = 0
-        self.last_active = None
-        self.search_required = False
-        self.search_matches = []
-        self.search_from = 0
-
+        # -- open files... -- #
         for filename in filenames:
             self.open_editor(filename)
 
@@ -599,6 +583,9 @@ class Tideay(object):
         self.open_entry.connect('focus-in-event', focusin)
 
         self.notebook.append_page(self.open_scroller, vbox)
+
+        self.accel_group.connect_group(ord('O'), gtk.gdk.CONTROL_MASK, 0,
+            lambda *etc: self.open_entry.grab_focus())
 
     def create_line_find_prefix_widget(self):
         vbox = gtk.VBox(False, 5)
@@ -650,8 +637,30 @@ class Tideay(object):
         
         # for showing the current file when the line find prefix widget is
         # focused. or rather, not focusing it.  honestly, this is a bit hacky.
+        # but is there a less hacky alternative...?  shrug
         self.empty_page = gtk.Label('')
         self.notebook.append_page(self.empty_page, vbox)
+
+        self.accel_group.connect_group(ord('I'), gtk.gdk.CONTROL_MASK, 0,
+            lambda *etc: self.line_entry.grab_focus())
+
+        self.accel_group.connect_group(ord('F'), gtk.gdk.CONTROL_MASK, 0,
+            lambda *etc: self.find_entry.grab_focus())
+
+        def prefix_focuser(*etc):
+            settings = self.prefix_entry.get_settings()
+            old = settings.get_property('gtk-entry-select-on-focus')
+            settings.set_property('gtk-entry-select-on-focus', False)
+            self.prefix_entry.grab_focus()
+            pos = 0
+            for char in self.prefix_entry.get_text():
+                if char not in ' \t':
+                    break
+                pos += 1
+            self.prefix_entry.set_position(pos)
+            settings.set_property('gtk-entry-select-on-focus', old)
+        self.accel_group.connect_group(ord('P'), gtk.gdk.CONTROL_MASK, 0,
+            prefix_focuser)
 
     def create_project_widget(self):
         vbox = gtk.VBox(False, 5)
@@ -1055,4 +1064,3 @@ if __name__ == '__main__':
     tideay.window.connect('destroy', gtk.main_quit)
 
     gtk.main()
-            
