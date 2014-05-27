@@ -264,7 +264,6 @@ def rewrite_text(text, map):
 
 class Editor(object):
     def __init__(self, filename):
-        filename = os.path.abspath(filename)
         self.filename = filename
         if SV2:
             self.buffer = gtksourceview2.Buffer()
@@ -280,30 +279,7 @@ class Editor(object):
         self.view.set_auto_indent(True)
         self.view.modify_font(pango.FontDescription('Ubuntu Mono 12'))
 
-        def on_key_press_event(widget, event):
-            end = self.buffer.get_iter_at_offset(
-                self.buffer.get_property('cursor-position')
-            )
-            start = self.buffer.get_iter_at_line(end.get_line())
-            if event.keyval == KEYVAL_TAB:
-                self.productive_rewrite(start, end)
-                return True
-            elif event.keyval == KEYVAL_RETURN:
-                if event.state & gtk.gdk.CONTROL_MASK:
-                    self.execute_command(start, end)
-                    return True
-                else:
-                    self.possibly_indent_new_block(start, end)
-                    return False
-            elif (event.keyval == KEYVAL_BACKSPACE and
-                  event.state & gtk.gdk.SHIFT_MASK):
-                self.destructive_rewrite(start, end)
-                return True
-            else:
-                keyname = gtk.gdk.keyval_name(event.keyval)
-                #print "Key %s (%d) was pressed" % (keyname, event.keyval)
-
-        self.view.connect('key_press_event', on_key_press_event)
+        self.view.connect('key_press_event', self.on_key_press_event)
 
         language = None
         mimetype = mimetypes.guess_type(filename)[0]
@@ -337,6 +313,29 @@ class Editor(object):
         self.file_signature = None
         self.file_text = ''
         self.sync_from_disk()
+
+    def on_key_press_event(self, widget, event):
+        end = self.buffer.get_iter_at_offset(
+            self.buffer.get_property('cursor-position')
+        )
+        start = self.buffer.get_iter_at_line(end.get_line())
+        if event.keyval == KEYVAL_TAB:
+            self.productive_rewrite(start, end)
+            return True
+        elif event.keyval == KEYVAL_RETURN:
+            if event.state & gtk.gdk.CONTROL_MASK:
+                self.execute_command(start, end)
+                return True
+            else:
+                self.possibly_indent_new_block(start, end)
+                return False
+        elif (event.keyval == KEYVAL_BACKSPACE and
+              event.state & gtk.gdk.SHIFT_MASK):
+            self.destructive_rewrite(start, end)
+            return True
+        else:
+            keyname = gtk.gdk.keyval_name(event.keyval)
+            #print "Key %s (%d) was pressed" % (keyname, event.keyval)
 
     def sync_from_disk(self):
         """ Replace text if file modified.
@@ -470,6 +469,23 @@ class Editor(object):
         buffer.select_range(iter1, iter2)
         
         buffer.end_user_action()
+
+
+class Watcher(Editor):
+    def __init__(self, command):
+        Editor.__init__(self, command)
+
+    def on_key_press_event(self, widget, event):
+        return False
+
+    def sync_from_disk(self):
+        pipe = subprocess.Popen(self.filename, shell=True, stdout=subprocess.PIPE)
+        output = pipe.communicate()[0]
+        self.buffer.set_text(output)
+        return True
+
+    def save_to_disk(self):
+        return
 
 
 class Tideay(object):
@@ -641,6 +657,9 @@ class Tideay(object):
 
         self.accel_group.connect_group(ord('F'), gtk.gdk.CONTROL_MASK, 0,
             lambda *etc: self.find_entry.grab_focus())
+
+        self.accel_group.connect_group(ord('D'), gtk.gdk.CONTROL_MASK, 0,
+            lambda *etc: self.open_editor('git diff', Watcher))
 
         def prefix_focuser(*etc):
             settings = self.prefix_entry.get_settings()
@@ -948,8 +967,12 @@ class Tideay(object):
         finally:
             self.busy -= 1
 
-    def open_editor(self, filename):
-        editor = Editor(filename)
+    def open_editor(self, filename, class_=Editor):
+        # bahh
+        if class_ is Editor:
+            filename = os.path.abspath(filename)
+
+        editor = class_(filename)
 
         scrolly = gtk.ScrolledWindow()
         scrolly.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
