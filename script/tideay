@@ -132,10 +132,10 @@ PRODUCTIVE_REWRITE_MAP = (
     (u'EUR', u'€'),
     (u".'.", u'∴'),
     (u'<->', u'↔'),
-    (u"```", u'‴'),
+    (u"```", u'‴'),  # see below -- this might get deprecated
     # two characters
     (u"''", u'ˮ'),   # this is a dbl-apo U+02EE.
-    (u"``", u'″'),
+    (u"``", u'″'),   # see below -- this might get deprecated
     (u'--', u'—'),
     (u'->', u'→'),
     (u'<-', u'←'),
@@ -194,6 +194,11 @@ PRODUCTIVE_REWRITE_MAP = (
     (u'σ', u'ς'),
     (u'ς', u'σ'),
     (u"`", u'′'),
+    (u"′", u'″'),
+    (u"″", u'‴'),
+    (u'"', u'“'),
+    (u'“', u'”'),
+    (u'”', u'"'),
     (u'\t', u'\t\t'),
 )
 
