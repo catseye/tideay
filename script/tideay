@@ -286,33 +286,7 @@ class Editor(object):
 
         self.view.connect('key_press_event', self.on_key_press_event)
 
-        language = None
-        if not mimetype:
-            mimetype = mimetypes.guess_type(filename)[0]
-        if mimetype:
-            #print "mimetype", mimetype
-            language = get_language_from_mime_type(mimetype)
-
-        if not os.path.exists(filename):
-            open(filename, 'wb').close()
-
-        if not language:
-            line = None
-            with open(self.filename, 'r') as f:
-                for line in f:
-                    break
-            if line is not None and line.startswith('#!'):
-                langs = (
-                    ('python', 'text/x-python'),
-                    ('ruby', 'text/x-ruby'),
-                    ('bin/sh', 'text/x-sh'),
-                    ('bash', 'text/x-sh'),
-                )
-                for (name, mime_type) in langs:
-                    if name in line:
-                        language = get_language_from_mime_type(mime_type)
-                        break
-
+        language = self.get_language(mimetype)
         if language:
             self.buffer.set_language(language)
 
@@ -342,6 +316,36 @@ class Editor(object):
         else:
             keyname = gtk.gdk.keyval_name(event.keyval)
             #print "Key %s (%d) was pressed" % (keyname, event.keyval)
+
+    def get_language(self, mimetype):
+        language = None
+        if not mimetype:
+            mimetype = mimetypes.guess_type(filename)[0]
+        if mimetype:
+            #print "mimetype", mimetype
+            language = get_language_from_mime_type(mimetype)
+
+        if not os.path.exists(filename):
+            open(filename, 'wb').close()
+
+        if not language:
+            line = None
+            with open(self.filename, 'r') as f:
+                for line in f:
+                    break
+            if line is not None and line.startswith('#!'):
+                langs = (
+                    ('python', 'text/x-python'),
+                    ('ruby', 'text/x-ruby'),
+                    ('bin/sh', 'text/x-sh'),
+                    ('bash', 'text/x-sh'),
+                )
+                for (name, mime_type) in langs:
+                    if name in line:
+                        language = get_language_from_mime_type(mime_type)
+                        break
+
+        return language
 
     def sync_from_disk(self):
         """ Replace text if file modified.
@@ -483,6 +487,9 @@ class Watcher(Editor):
 
     def on_key_press_event(self, widget, event):
         return True
+
+    def get_language(self, mimetype):
+        return get_language_from_mime_type(mimetype)
 
     def sync_from_disk(self):
         pipe = subprocess.Popen(self.filename, shell=True, stdout=subprocess.PIPE)
