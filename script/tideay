@@ -7,12 +7,12 @@
 #    it under the terms of the GNU General Public License as published by
 #    the Free Software Foundation; either version 2 of the License, or
 #    (at your option) any later version.
-#    
+#
 #    This program is distributed in the hope that it will be useful,
 #    but WITHOUT ANY WARRANTY; without even the implied warranty of
 #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #    GNU General Public License for more details.
-#    
+#
 #    You should have received a copy of the GNU General Public License
 #    along with this program; if not, write to the Free Software
 #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -263,7 +263,7 @@ def rewrite_text(text, map):
 ### classes ###
 
 class Editor(object):
-    def __init__(self, filename):
+    def __init__(self, filename, mimetype=None):
         self.filename = filename
         if SV2:
             self.buffer = gtksourceview2.Buffer()
@@ -282,7 +282,8 @@ class Editor(object):
         self.view.connect('key_press_event', self.on_key_press_event)
 
         language = None
-        mimetype = mimetypes.guess_type(filename)[0]
+        if not mimetype:
+            mimetype = mimetypes.guess_type(filename)[0]
         if mimetype:
             #print "mimetype", mimetype
             language = get_language_from_mime_type(mimetype)
@@ -472,15 +473,17 @@ class Editor(object):
 
 
 class Watcher(Editor):
-    def __init__(self, command):
-        Editor.__init__(self, command)
+    def __init__(self, command, mimetype=None):
+        Editor.__init__(self, command, mimetype=mimetype)
 
     def on_key_press_event(self, widget, event):
-        return False
+        return True
 
     def sync_from_disk(self):
         pipe = subprocess.Popen(self.filename, shell=True, stdout=subprocess.PIPE)
         output = pipe.communicate()[0]
+        if output == self.buffer.get_text(*self.buffer.get_bounds()):
+            return False
         self.buffer.set_text(output)
         return True
 
@@ -659,7 +662,7 @@ class Tideay(object):
             lambda *etc: self.find_entry.grab_focus())
 
         self.accel_group.connect_group(ord('D'), gtk.gdk.CONTROL_MASK, 0,
-            lambda *etc: self.open_editor('git diff', Watcher))
+            lambda *etc: self.open_watcher('git diff', mimetype='text/x-diff'))
 
         def prefix_focuser(*etc):
             settings = self.prefix_entry.get_settings()
@@ -967,13 +970,15 @@ class Tideay(object):
         finally:
             self.busy -= 1
 
-    def open_editor(self, filename, class_=Editor):
-        # bahh
-        if class_ is Editor:
-            filename = os.path.abspath(filename)
+    def open_editor(self, filename):
+        filename = os.path.abspath(filename)
+        return self.open_buffer(Editor(filename), os.path.basename(filename))
 
-        editor = class_(filename)
+    def open_watcher(self, command, mimetype=None):
+        return self.open_buffer(Watcher(command, mimetype=mimetype), command)
 
+    # TODO: "buffer" needs a better name.  as does "editor"
+    def open_buffer(self, editor, label_text):
         scrolly = gtk.ScrolledWindow()
         scrolly.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
         scrolly.add(editor.view)
@@ -1003,7 +1008,7 @@ class Tideay(object):
         editor.view.connect('focus-out-event', self.unfocus)
 
         hbox = gtk.HBox()
-        label = gtk.Label(os.path.basename(filename))
+        label = gtk.Label(label_text)
         hbox.pack_start(label, False, False)
 
         def close(widget):
