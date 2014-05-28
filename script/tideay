@@ -484,9 +484,10 @@ class Editor(object):
 class Watcher(Editor):
     def __init__(self, command, mimetype=None):
         Editor.__init__(self, command, mimetype=mimetype)
+        self.view.set_editable(False)
 
     def on_key_press_event(self, widget, event):
-        return True
+        return False
 
     def get_language(self, mimetype):
         return get_language_from_mime_type(mimetype)
