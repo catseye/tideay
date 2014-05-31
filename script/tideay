@@ -476,11 +476,19 @@ class Tideay(object):
     def __init__(self):
         
         cwd = os.path.realpath(os.getcwd())
+        rendezvous = '\0tideay' + cwd
         self.lock_socket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
         try:
-            self.lock_socket.bind('\0tideay' + cwd)
+            self.lock_socket.bind(rendezvous)
+            gobject.io_add_watch(
+                self.lock_socket.makefile('r'),
+                gobject.IO_IN, self.on_receive_message, self
+            )
         except socket.error:
-            raise EnvironmentError('tideay is already running in directory %s' % cwd)
+            self.lock_socket.connect(rendezvous)
+            self.lock_socket.send('hi there, this is line 1\n')
+            self.lock_socket.send('hello again, this is line 2\n')
+            sys.exit(0)
 
         # instance variables (there are others; they are all gtk controls)
         self.busy = 0
@@ -558,6 +566,12 @@ class Tideay(object):
         gobject.timeout_add(1000, timeout)
 
         self.refresh()
+
+    def on_receive_message(self, fh, num, other):
+        print fh.readline().strip('\n')
+        print fh.readline().strip('\n')
+        print "---."
+        return True
 
     def create_open_widget(self):
         vbox = gtk.VBox(False, 5)
