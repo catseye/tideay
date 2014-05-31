@@ -474,22 +474,6 @@ class Editor(object):
 
 class Tideay(object):
     def __init__(self):
-        
-        cwd = os.path.realpath(os.getcwd())
-        rendezvous = '\0tideay' + cwd
-        self.lock_socket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
-        try:
-            self.lock_socket.bind(rendezvous)
-            gobject.io_add_watch(
-                self.lock_socket.makefile('r'),
-                gobject.IO_IN, self.on_receive_message, self
-            )
-        except socket.error:
-            self.lock_socket.connect(rendezvous)
-            self.lock_socket.send('hi there, this is line 1\n')
-            self.lock_socket.send('hello again, this is line 2\n')
-            sys.exit(0)
-
         # instance variables (there are others; they are all gtk controls)
         self.busy = 0
         self.last_active = None
@@ -566,12 +550,6 @@ class Tideay(object):
         gobject.timeout_add(1000, timeout)
 
         self.refresh()
-
-    def on_receive_message(self, fh, num, other):
-        print fh.readline().strip('\n')
-        print fh.readline().strip('\n')
-        print "---."
-        return True
 
     def create_open_widget(self):
         vbox = gtk.VBox(False, 5)
@@ -1068,11 +1046,30 @@ class Tideay(object):
         self.set_window_title(n)
 
 
-if __name__ == '__main__':
-    tideay = Tideay()
-    for filename in sys.argv[1:]:
+def on_receive_message(fh, num, tideay):
+    filenames = fh.readline().strip('\n').split(' ')
+    for filename in filenames:
         tideay.open_editor(filename)
-    tideay.select_editor(0)
-    tideay.window.connect('destroy', gtk.main_quit)
+    return True
 
-    gtk.main()
+
+if __name__ == '__main__':
+    cwd = os.path.realpath(os.getcwd())
+    rendezvous = '\0tideay' + cwd
+    lock_socket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+    try:
+        lock_socket.bind(rendezvous)
+
+        tideay = Tideay()
+        for filename in sys.argv[1:]:
+            tideay.open_editor(filename)
+        tideay.select_editor(0)
+        tideay.window.connect('destroy', gtk.main_quit)
+        gobject.io_add_watch(
+            lock_socket.makefile('r'),
+            gobject.IO_IN, on_receive_message, tideay
+        )        
+        gtk.main()
+    except socket.error:
+        lock_socket.connect(rendezvous)
+        lock_socket.send(' '.join(sys.argv[1:]) + '\n')

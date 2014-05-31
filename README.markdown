@@ -127,6 +127,9 @@ Other changes/improvements over yaedit
 *   The hashbang line of the file will be sniffed if the language cannot be
     determined from the the file extension.  Currently supports Python, Ruby,
     and shell.
+*   Special read-only editor panes can show output from a periodically-run
+    command.  The only one implemented so far is a pane that shows the
+    output of `git diff`, created by Ctrl+D.
 
 Protips
 -------
@@ -204,10 +207,6 @@ Wishlist
     the workspace file is opened.  It could also contain rewrite rules.
     And be a good place for jotting miscellaneous notes and running
     miscellaneous commands without wrecking a buffer.
-*   Read-only buffers that watch a command.  (`git diff`, in particular.)
-*   When trying to start tideay when tideay is already running — send the
-    running instance a message telling it to open the files that we were
-    asked to open.
 *   Plugins.  These should just be Python files, in a subdirectory of your
     home directory (maybe?) which are sourced upon startup.  tideay could
     ship with some, but you'd have to install them yourself.  The rewriting
@@ -223,8 +222,8 @@ Wishlist
     when it's done.  This would also let you run commands which require a
     password to be entered.
 *   Key combination to select URL under cursor (double/triple-clicking doesn't
-    cut it) and (further key combination to?) open it using the default
-    browser.
+    cut it; Ctrl+clicking might) and (further key combination to?) open it
+    using the default browser.
 *   Should destructive rewriting be the inverse map of productive?  If
     `''` is a special case in the map then this could work, because `''`
     rewrites to four spaces.
