@@ -506,7 +506,8 @@ class Watcher(Editor):
 
 
 class Tideay(object):
-    def __init__(self):
+    def __init__(self, dir):
+        self.dir = dir
         # instance variables (there are others; they are all gtk controls)
         self.busy = 0
         self.last_active = None
@@ -561,6 +562,18 @@ class Tideay(object):
         self.notebook.connect('switch-page', on_switch)
 
         self.window.add(self.notebook)
+
+        def open_watcher(*etc):
+            if os.path.isdir(os.path.join(self.dir, '.git')):
+                 self.open_watcher('git diff', mimetype='text/x-diff')
+            elif os.path.isdir(os.path.join(self.dir, '.hg')):
+                 self.open_watcher('hg diff', mimetype='text/x-diff')
+            else:
+                pass
+            return True
+
+        self.accel_group.connect_group(ord('D'), gtk.gdk.CONTROL_MASK, 0,
+            open_watcher)
 
         def close_editor():
             page = self.notebook.get_nth_page(self.notebook.get_current_page())
@@ -666,9 +679,6 @@ class Tideay(object):
 
         self.accel_group.connect_group(ord('F'), gtk.gdk.CONTROL_MASK, 0,
             lambda *etc: self.find_entry.grab_focus())
-
-        self.accel_group.connect_group(ord('D'), gtk.gdk.CONTROL_MASK, 0,
-            lambda *etc: self.open_watcher('git diff', mimetype='text/x-diff'))
 
         def prefix_focuser(*etc):
             settings = self.prefix_entry.get_settings()
@@ -1092,6 +1102,7 @@ def on_receive_message(fh, num, tideay):
     filenames = fh.readline().strip('\n').split(' ')
     for filename in filenames:
         tideay.open_editor(filename)
+    # tideay.bring_to_front()
     return True
 
 
@@ -1101,8 +1112,7 @@ if __name__ == '__main__':
     lock_socket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
     try:
         lock_socket.bind(rendezvous)
-
-        tideay = Tideay()
+        tideay = Tideay(cwd)
         for filename in sys.argv[1:]:
             tideay.open_editor(filename)
         tideay.select_editor(0)
