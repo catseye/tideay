@@ -196,8 +196,6 @@ Wishlist
     (Argument against: maybe it was accidental and buffer is only remaining
     copy of what was there.  Maybe "deaden" the buffer.  Maybe recreate the
     file...)
-*   When opening a new file, cursor position is at bottom of file, but
-    view is scrolled to top of file.  Maybe move cursor to top, too.
 
 ### other wild ideas ###
 

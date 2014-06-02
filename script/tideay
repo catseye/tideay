@@ -365,6 +365,7 @@ class Editor(object):
         self.buffer.begin_not_undoable_action()
         self.buffer.set_text(self.file_text)  # TODO: check utf-8 correctness
         self.buffer.end_not_undoable_action()
+        self.buffer.place_cursor(self.buffer.get_start_iter())
         return True
 
     def save_to_disk(self):
