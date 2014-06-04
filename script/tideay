@@ -997,6 +997,8 @@ class Tideay(object):
 
     def open_editor(self, filename):
         filename = os.path.abspath(filename)
+        if filename.endswith(':') and not os.path.exists(filename):
+            filename = filename[:-1]
         return self.open_buffer(Editor(filename), os.path.basename(filename))
 
     def open_watcher(self, command, mimetype=None):
