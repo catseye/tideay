@@ -584,6 +584,11 @@ class Tideay(object):
         self.accel_group.connect_group(ord('D'), gtk.gdk.CONTROL_MASK, 0,
             open_watcher)
 
+        # TODO: connect this to the sourceview control and have it fakie-send
+        # a copy (Ctrl+C) to the sourceview.  Also Ctrl+Shift+V ⇒ paste.
+        self.accel_group.connect_group(ord('C'), gtk.gdk.CONTROL_MASK | gtk.gdk.SHIFT_MASK, 0,
+            open_watcher)
+
         def close_editor():
             page = self.notebook.get_nth_page(self.notebook.get_current_page())
             if page in self.editors:
