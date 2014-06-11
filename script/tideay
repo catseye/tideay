@@ -573,12 +573,18 @@ class Tideay(object):
         self.window.add(self.notebook)
 
         def open_watcher(*etc):
-            if os.path.isdir(os.path.join(self.dir, '.git')):
-                 self.open_watcher('git diff', mimetype='text/x-diff')
-            elif os.path.isdir(os.path.join(self.dir, '.hg')):
-                 self.open_watcher('hg diff', mimetype='text/x-diff')
-            else:
-                pass
+            path = self.dir
+            while True:
+                if os.path.isdir(os.path.join(path, '.git')):
+                    self.open_watcher('git diff', mimetype='text/x-diff')
+                    break
+                elif os.path.isdir(os.path.join(path, '.hg')):
+                    self.open_watcher('hg diff', mimetype='text/x-diff')
+                    break
+                elif path == '/' or not path:
+                    break
+                else:
+                    path = os.path.dirname(path)
             return True
 
         self.accel_group.connect_group(ord('D'), gtk.gdk.CONTROL_MASK, 0,
