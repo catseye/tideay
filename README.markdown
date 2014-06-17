@@ -126,7 +126,7 @@ Other changes/improvements over yaedit
     documented in this README for now.
 *   The hashbang line of the file will be sniffed if the language cannot be
     determined from the the file extension.  Currently supports Python, Ruby,
-    and shell.
+    Lua, and shell.
 *   Special read-only editor panes can show output from a periodically-run
     command.  The only one implemented so far is a pane that shows the
     output of `git diff`, created by Ctrl+D.
