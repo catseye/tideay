@@ -21,7 +21,6 @@ Controls
 --------
 
     Ctrl+O                 open (or create) a file into a buffer
-    Alt+1, Alt+2...Alt+0   switch to buffer #1, #2... #10
     Ctrl+W                 close buffer
     
     Ctrl+I                 jump to line
@@ -188,7 +187,6 @@ Wishlist
 ### buffers ###
 
 *   **Some way to switch to a buffer by typing in part of its filename.**
-*   Should not be possible to open 2 copies of the same file.
 *   Should be able to populate buffers from all "interesting" files in the
     current directory tree.  (repository <=> workspace)
 *   Some nice way to move/copy a buffer while inside the editor.

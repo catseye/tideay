@@ -303,6 +303,9 @@ class Editor(object):
         self.file_text = ''
         self.sync_from_disk()
 
+    def key(self):
+        return '%s(%s)' % (self.__class__.__name__, self.filename)
+
     def on_key_press_event(self, widget, event):
         end = self.buffer.get_iter_at_offset(
             self.buffer.get_property('cursor-position')
@@ -1018,6 +1021,18 @@ class Tideay(object):
 
     # TODO: "buffer" needs a better name.  as does "editor"
     def open_buffer(self, editor, label_text):
+
+        i = 0
+        while i < self.notebook.get_n_pages():
+            item = self.notebook.get_nth_page(i)
+            if item not in self.editors:
+                break
+            if self.editors[item].key() == editor.key():
+                print "%s already open" % editor.key()
+                self.select_editor(i)
+                return
+            i += 1
+
         scrolly = gtk.ScrolledWindow()
         scrolly.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
         scrolly.add(editor.view)
@@ -1064,6 +1079,7 @@ class Tideay(object):
         hbox.show_all()
         scrolly.show_all()
 
+        # TODO does this make sense anymore?
         filenames = []
         i = 0
         while i < self.notebook.get_n_pages():
@@ -1082,12 +1098,9 @@ class Tideay(object):
         where = best
 
         self.notebook.insert_page(scrolly, hbox, where)
-        page_number = self.notebook.page_num(scrolly)
-        self.notebook.set_current_page(page_number)
+        self.select_editor(self.notebook.page_num(scrolly))
         self.notebook.set_tab_reorderable(scrolly, True)
-
         self.editors[scrolly] = editor
-        self.set_window_title(page_number)
 
     def active_sourceview(self):
         """Note that this returns a gtksourceview2.View object.
