@@ -583,7 +583,7 @@ class Tideay(object):
                     self.open_watcher('git diff', mimetype='text/x-diff')
                     break
                 elif os.path.isdir(os.path.join(path, '.hg')):
-                    self.open_watcher('hg diff', mimetype='text/x-diff')
+                    self.open_watcher('hg diff --nodates', mimetype='text/x-diff')
                     break
                 elif path == '/' or not path:
                     break
