@@ -134,6 +134,11 @@ PRODUCTIVE_REWRITE_MAP = (
     (u'<->', u'↔'),
     (u'<~>', u'↭'),
     (u'...', u'…'),
+    (u'(x)', u'⊗'),
+    (u'(.)', u'⊙'),
+    (u'(+)', u'⊕'),
+    (u'(-)', u'⊖'),
+    (u'(/)', u'⊘'),
     # two characters
     (u"''", u'ˮ'),   # this is a dbl-apo U+02EE.
     (u'--', u'—'),
@@ -206,7 +211,11 @@ PRODUCTIVE_REWRITE_MAP = (
     (u'“', u'”'),
     (u'”', u'"'),
     (u'↝', u'⇝'),
+    (u'⇝', u'↝'),
     (u'↜', u'⇜'),
+    (u'⇜', u'↜'),
+    (u'≤', u'⇐'),   # because <= goes to ≤ but sometimes you mean ⇐
+    (u'⇐', u'≤'),
     (u'\t', u'\t\t'),
 )
 
