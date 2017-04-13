@@ -1111,7 +1111,7 @@ class Tideay(object):
         best = 0
         best_before = ''
         for i in xrange(1, len(filenames) + 1):
-            if filenames[i - 1] > best_before and filename >= filenames[i - 1]:
+            if filenames[i - 1] > best_before:  # and filename >= filenames[i - 1]:  # ?? what is filename ??
                 best = i
                 best_before = filenames[i - 1]
         where = best
