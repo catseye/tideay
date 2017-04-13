@@ -2,7 +2,7 @@
 # encoding: UTF-8
 
 #    Copyright (C) 2007 Paul Harrison
-#    Portions copyright (C) 2013-2014 Chris Pressey, Cat's Eye Technologies
+#    Portions copyright (C) 2013-2017 Chris Pressey, Cat's Eye Technologies
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
 #    the Free Software Foundation; either version 2 of the License, or
@@ -55,12 +55,6 @@
 #         1         2         3         4         5         6         7
 #1234567890123456789012345678901234567890123456789012345678901234567890123456789
 
-try:
-    import gtksourceview2
-    SV2 = True
-except:
-    import gtksourceview
-    SV2 = False
 
 import mimetypes
 import os
@@ -71,15 +65,28 @@ import sys
 import weakref
 
 import glob
-import gobject
-import gtk
-import pango
+try:
+    import gobject
+    import gtk
+    import pango
+    try:
+        import gtksourceview2
+        SV2 = True
+    except:
+        import gtksourceview
+        SV2 = False
+except:
+    print('some gtk packages not available; functionality limited to messaging')
+    SV2 = None
+
 
 ### constants ###
 
 CLOSE_TIMEOUT = 400
 
-if SV2:
+if SV2 is None:
+    MANAGER = None
+elif SV2:
     MANAGER = gtksourceview2.language_manager_get_default()
 else:
     MANAGER = gtksourceview.SourceLanguagesManager()
@@ -1040,7 +1047,7 @@ class Tideay(object):
             if item not in self.editors:
                 break
             if self.editors[item].key() == editor.key():
-                print "%s already open" % editor.key()
+                print("%s already open" % editor.key())
                 self.select_editor(i)
                 return
             i += 1
@@ -1153,11 +1160,11 @@ def on_receive_message(fh, num, tideay):
             try:
                 tideay.open_editor(filename)
             except Exception as e:
-                print filename, repr(e)
+                print(filename, repr(e))
                 # TODO and maybe backtrace
         # tideay.bring_to_front()
     except Exception as e:
-        print repr(e)
+        print(repr(e))
         # TODO and maybe backtrace
     return True
 
@@ -1168,6 +1175,9 @@ if __name__ == '__main__':
     lock_socket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
     try:
         lock_socket.bind(rendezvous)
+        if SV2 is None:
+            print('not opening new window; gtk not available')
+            sys.exit()
         tideay = Tideay(cwd)
         for filename in sys.argv[1:]:
             tideay.open_editor(filename)
@@ -1179,5 +1189,9 @@ if __name__ == '__main__':
         )
         gtk.main()
     except socket.error:
+        print('sending "{}" to tideay open for {}'.format(' '.join(sys.argv[1:]), cwd))
         lock_socket.connect(rendezvous)
-        lock_socket.send('\v'.join(sys.argv[1:]) + '\n')
+        try:
+            lock_socket.send(bytes('\v'.join(sys.argv[1:]) + '\n', 'UTF-8'))
+        except Exception:
+            lock_socket.send('\v'.join(sys.argv[1:]) + '\n')
