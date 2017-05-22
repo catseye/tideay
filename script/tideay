@@ -1093,7 +1093,7 @@ class Tideay(object):
 
         editor.buffer.connect('mark-set', self.refresh)
 
-        editor.buffer.create_tag('found', background='lighe')
+        editor.buffer.create_tag('found', background='light blue')
 
         editor.view.connect('focus-out-event', self.unfocus)
 
