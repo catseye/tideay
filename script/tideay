@@ -358,6 +358,9 @@ class Editor(object):
         if not mimetype and self.filename.endswith('.pyx'):
             return get_language_from_mime_type('text/x-python')
 
+        if not mimetype and self.filename.endswith('.jsx'):
+            return get_language_from_mime_type('text/x-javascript')
+
         line = None
         with open(self.filename, 'r') as f:
             for line in f:
@@ -629,6 +632,7 @@ class Tideay(object):
 
         self.window.show_all()
         self.find_hbox.hide()
+        self.find_only_hbox.hide()
 
         self.open_entry.grab_focus()
 
@@ -687,6 +691,7 @@ class Tideay(object):
         allow_tabs_in_entry(self.find_entry)
         vbox.pack_start(self.find_entry, False, False)
 
+        # find next and find prev buttons
         self.find_hbox = gtk.HBox(False, 0)
         vbox.pack_start(self.find_hbox, False, False)
 
@@ -696,6 +701,13 @@ class Tideay(object):
         right = gtk.Button('next')
         right.connect('clicked', self.find_next)
         self.find_hbox.pack_start(right)
+
+        # find go button
+        self.find_only_hbox = gtk.HBox(False, 0)
+        vbox.pack_start(self.find_only_hbox, False, False)
+        only = gtk.Button('go')
+        only.connect('clicked', self.find_next)
+        self.find_only_hbox.pack_start(only)
 
         # prefix
         self.prefix_label = gtk.Label('prefix')
@@ -1020,10 +1032,15 @@ class Tideay(object):
                 else:
                     self.search_matches = []
 
-                if len(self.search_matches) < 2:
+                if len(self.search_matches) == 0:
                     self.find_hbox.hide()
+                    self.find_only_hbox.hide()
+                elif len(self.search_matches) == 1:
+                    self.find_hbox.hide()
+                    self.find_only_hbox.show()
                 else:
                     self.find_hbox.show()
+                    self.find_only_hbox.hide()
 
             self.last_active = sourceview
         finally:
@@ -1076,7 +1093,7 @@ class Tideay(object):
 
         editor.buffer.connect('mark-set', self.refresh)
 
-        editor.buffer.create_tag('found', background='light blue')
+        editor.buffer.create_tag('found', background='lighe')
 
         editor.view.connect('focus-out-event', self.unfocus)
 
@@ -1189,7 +1206,7 @@ if __name__ == '__main__':
         )
         gtk.main()
     except socket.error:
-        print('sending "{}" to tideay open for {}'.format(' '.join(sys.argv[1:]), cwd))
+        print('sending "{}" to existing tideay instance for {}'.format(' '.join(sys.argv[1:]), cwd))
         lock_socket.connect(rendezvous)
         try:
             lock_socket.send(bytes('\v'.join(sys.argv[1:]) + '\n', 'UTF-8'))
