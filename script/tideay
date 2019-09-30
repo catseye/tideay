@@ -350,15 +350,18 @@ class Editor(object):
             open(self.filename, 'wb').close()
 
     def get_language(self, mimetype):
+        if self.filename.endswith('.ts'):
+            return get_language_from_mime_type('text/x-javascript')
+
         if not mimetype:
             mimetype = mimetypes.guess_type(self.filename)[0]
         if mimetype:
             return get_language_from_mime_type(mimetype)
 
-        if not mimetype and self.filename.endswith('.pyx'):
+        if self.filename.endswith('.pyx'):
             return get_language_from_mime_type('text/x-python')
 
-        if not mimetype and self.filename.endswith('.jsx'):
+        if self.filename.endswith(('.jsx', '.tsx',)):
             return get_language_from_mime_type('text/x-javascript')
 
         line = None
